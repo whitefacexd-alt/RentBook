@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="RentBook"/>
+<meta name="theme-color" content="#6c5ce7"/>
+<title>RentBook Pro</title>
+<link rel="manifest" href="manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800;900&family=DM+Mono:wght@500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0d14;--bg2:#161622;--bg3:#1e1e2e;--bg4:#252535;
+  --border:#2a2a3e;--border2:#333348;
+  --text:#f0f0ff;--text2:#a0a0c0;--text3:#6060a0;
+  --accent:#6c5ce7;--accent2:#7d6ef0;--accent-glow:rgba(108,92,231,0.25);
+  --green:#00c9a7;--orange:#ff9f43;--red:#ff6b6b;--yellow:#ffd93d;
+  --radius:16px;--radius-sm:10px;--radius-xs:8px;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --font:'DM Sans',system-ui,sans-serif;
+  --mono:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
+input,select,button,textarea{font-family:var(--font)}
+
+/* ── App Shell ── */
+#app{max-width:440px;margin:0 auto;min-height:100vh;position:relative;background:var(--bg)}
+
+/* ── Header ── */
+.header{
+  background:linear-gradient(180deg,var(--bg2) 0%,rgba(22,22,34,0.95) 100%);
+  border-bottom:1px solid var(--border);
+  padding:14px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+  backdrop-filter:blur(12px);
+}
+.header-logo{display:flex;align-items:center;gap:10px}
+.header-icon{
+  width:34px;height:34px;background:linear-gradient(135deg,var(--accent),#4834d4);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:17px;box-shadow:0 4px 12px var(--accent-glow);
+}
+.header-title{font-size:17px;font-weight:900;letter-spacing:-0.5px}
+.header-sub{font-size:10px;color:var(--text3);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.header-right{display:flex;align-items:center;gap:8px}
+.icon-btn{
+  background:var(--bg3);border:1px solid var(--border);border-radius:10px;
+  width:36px;height:36px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px;transition:all 0.15s;
+}
+.icon-btn:active{transform:scale(0.92)}
+
+/* ── Nav Bar ── */
+.nav{
+  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+  width:100%;max-width:440px;
+  background:linear-gradient(180deg,rgba(22,22,34,0.98) 0%,var(--bg2) 100%);
+  border-top:1px solid var(--border);
+  display:flex;z-index:100;
+  padding:8px 0 max(12px,env(safe-area-inset-bottom));
+  backdrop-filter:blur(16px);
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 4px;background:none;border:none;cursor:pointer;
+  color:var(--text3);transition:all 0.2s;position:relative;
+}
+.nav-btn.active{color:var(--accent)}
+.nav-btn.active .nav-icon-wrap{background:var(--accent-glow)}
+.nav-icon-wrap{
+  width:42px;height:28px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+}
+.nav-icon{font-size:18px;line-height:1}
+.nav-label{font-size:9.5px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase}
+.nav-dot{
+  position:absolute;top:4px;right:calc(50% - 22px);
+  width:6px;height:6px;border-radius:50%;background:var(--red);
+  border:2px solid var(--bg2);
+}
+
+/* ── Scrollable content ── */
+.content{padding-bottom:90px;min-height:calc(100vh - 120px)}
+
+/* ── Income Hero Card ── */
+.income-hero{
+  margin:12px 16px;border-radius:22px;overflow:hidden;
+  background:linear-gradient(135deg,#3d2e9e 0%,#6c5ce7 50%,#8b5cf6 100%);
+  padding:22px 20px 18px;position:relative;
+  box-shadow:0 8px 32px rgba(108,92,231,0.35);
+}
+.income-hero::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='25' fill='none' stroke='rgba(255,255,255,0.05)' stroke-width='1'/%3E%3C/svg%3E") repeat;
+  opacity:0.5;
+}
+.income-hero *{position:relative}
+.hero-label{font-size:10px;font-weight:700;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:1.5px}
+.hero-amount{font-size:38px;font-weight:900;letter-spacing:-2px;margin:6px 0 4px;color:#fff}
+.hero-month{font-size:13px;color:rgba(255,255,255,0.8);font-weight:600}
+.hero-meta{font-size:11px;color:rgba(255,255,255,0.55);margin-top:6px;font-weight:500}
+.hero-pills{display:flex;gap:8px;margin-top:14px}
+.hero-pill{
+  background:rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px;
+  font-size:11px;font-weight:700;color:rgba(255,255,255,0.9);
+  backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.1);
+}
+
+/* ── Stat Grid ── */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 4px}
+.stat-card{
+  background:var(--bg2);border-radius:var(--radius-sm);padding:14px;
+  border:1px solid var(--border);position:relative;overflow:hidden;
+}
+.stat-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c)}
+.stat-val{font-size:30px;font-weight:900;color:var(--c);letter-spacing:-1px}
+.stat-lbl{font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px}
+
+/* ── Section Header ── */
+.section-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 16px 8px;
+}
+.section-title{font-size:11px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px}
+.section-action{font-size:11px;font-weight:700;color:var(--accent);cursor:pointer}
+
+/* ── Cards ── */
+.card{
+  background:var(--bg2);border-radius:var(--radius);padding:15px;
+  border:1px solid var(--border);margin:0 16px 10px;
+}
+.card.alert-red{border-left:3px solid var(--red)}
+.card.alert-yellow{border-left:3px solid var(--yellow)}
+.card.alert-green{border-left:3px solid var(--green)}
+.card:active{background:var(--bg3)}
+
+/* ── Room Number Badge ── */
+.room-num{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:900;font-family:var(--mono);
+}
+.room-num.occ{background:rgba(108,92,231,0.15);color:var(--accent)}
+.room-num.vac{background:rgba(96,96,160,0.1);color:var(--text3)}
+
+/* ── Status Badges ── */
+.badge{border-radius:20px;padding:3px 10px;font-size:10.5px;font-weight:800;display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.badge.paid{background:rgba(0,201,167,0.12);color:var(--green)}
+.badge.pending{background:rgba(255,107,107,0.12);color:var(--red)}
+.badge.partial{background:rgba(255,217,61,0.12);color:var(--yellow)}
+.badge.vacant{background:rgba(96,96,160,0.1);color:var(--text3)}
+
+/* ── Progress Bar ── */
+.prog-wrap{background:var(--bg4);border-radius:99px;height:7px;overflow:hidden;margin-bottom:5px}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:99px;transition:width 0.6s cubic-bezier(.34,1.56,.64,1)}
+
+/* ── Inputs ── */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10.5px;font-weight:800;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:5px}
+.inp{
+  background:var(--bg3);border:1.5px solid var(--border);border-radius:12px;
+  padding:12px 13px;color:var(--text);font-size:14px;width:100%;
+  outline:none;transition:border-color 0.15s;appearance:none;-webkit-appearance:none;
+}
+.inp:focus{border-color:var(--accent)}
+.inp::placeholder{color:var(--text3)}
+select.inp option{background:var(--bg3)}
+
+/* ── Buttons ── */
+.btn{
+  border:none;border-radius:12px;padding:12px 16px;font-weight:800;font-size:13px;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  transition:all 0.15s;-webkit-appearance:none;
+}
+.btn:active{transform:scale(0.96)}
+.btn-primary{background:var(--accent);color:#fff;width:100%;box-shadow:0 4px 16px var(--accent-glow)}
+.btn-primary:active{background:var(--accent2)}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border)}
+.btn-danger{background:rgba(255,107,107,0.1);color:var(--red);border:1.5px solid rgba(255,107,107,0.25)}
+.btn-wa{background:#25D366;color:#fff;border-radius:10px;font-size:12px;padding:9px 13px}
+.btn-sm{padding:8px 13px;font-size:12px;border-radius:10px}
+
+/* ── Action Row ── */
+.action-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+
+/* ── Filter Pills ── */
+.pill-row{display:flex;gap:6px;padding:4px 16px 8px;flex-wrap:wrap}
+.pill{
+  padding:7px 13px;border-radius:10px;font-size:11.5px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border);background:var(--bg3);color:var(--text3);
+  transition:all 0.15s;white-space:nowrap;
+}
+.pill.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 10px var(--accent-glow)}
+
+/* ── Search ── */
+.search-wrap{
+  background:var(--bg3);border:1.5px solid var(--border);border-radius:14px;
+  padding:10px 13px;display:flex;align-items:center;gap:8px;margin:8px 16px;
+}
+.search-wrap input{background:none;border:none;color:var(--text);font-size:13px;flex:1;outline:none}
+.search-wrap input::placeholder{color:var(--text3)}
+
+/* ── Modal / Sheet ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn 0.2s}
+.sheet{
+  background:var(--bg2);border-radius:22px 22px 0 0;width:100%;max-width:440px;
+  max-height:92vh;overflow-y:auto;padding:0 0 40px;
+  animation:slideUp 0.3s cubic-bezier(.34,1.2,.64,1);
+}
+.sheet-handle{width:40px;height:4px;background:var(--border2);border-radius:99px;margin:14px auto 0}
+.sheet-header{padding:16px 18px 12px;border-bottom:1px solid var(--border)}
+.sheet-title{font-size:17px;font-weight:900}
+.sheet-body{padding:18px}
+
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* ── Toast ── */
+.toast{
+  position:fixed;bottom:92px;left:50%;transform:translateX(-50%);
+  border-radius:12px;padding:10px 20px;font-weight:800;font-size:13px;
+  z-index:999;pointer-events:none;white-space:nowrap;
+  animation:toastIn 0.3s cubic-bezier(.34,1.2,.64,1);
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+}
+.toast.success{background:var(--green);color:#fff}
+.toast.error{background:var(--red);color:#fff}
+.toast.info{background:var(--accent);color:#fff}
+@keyframes toastIn{from{transform:translate(-50%,20px);opacity:0}to{transform:translate(-50%,0);opacity:1}}
+
+/* ── Empty State ── */
+.empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:44px;margin-bottom:12px}
+.empty-title{font-size:15px;font-weight:800;color:var(--text2);margin-bottom:5px}
+
+/* ── PWA Install Banner ── */
+.install-banner{
+  margin:10px 16px;background:linear-gradient(135deg,rgba(108,92,231,0.15),rgba(72,52,212,0.1));
+  border:1px solid rgba(108,92,231,0.3);border-radius:var(--radius);
+  padding:13px 15px;display:flex;align-items:center;gap:12px;cursor:pointer;
+}
+.install-banner-icon{font-size:22px}
+.install-banner-text{flex:1}
+.install-banner-title{font-size:13px;font-weight:800;color:var(--accent)}
+.install-banner-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.install-banner-close{color:var(--text3);font-size:16px;padding:4px;cursor:pointer}
+
+/* ── Expense Item ── */
+.expense-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.expense-row:last-child{border-bottom:none}
+.expense-cat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+
+/* ── Divider ── */
+.divider{height:1px;background:var(--border);margin:0 16px 10px}
+
+/* ── Month picker ── */
+.month-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 6px;gap:10px}
+
+input[type=month]{color-scheme:dark}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-logo">
+      <div class="header-icon">🏠</div>
+      <div>
+        <div class="header-title">RentBook</div>
+        <div class="header-sub" id="headerSub">Pro</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="icon-btn" id="addBtn" title="Add">➕</div>
+      <div class="icon-btn" id="searchToggleBtn">🔍</div>
+    </div>
+  </div>
+
+  <div class="content" id="content"></div>
+
+  <nav class="nav" id="nav">
+    <button class="nav-btn active" data-tab="dashboard">
+      <div class="nav-icon-wrap"><span class="nav-icon">📊</span></div>
+      <span class="nav-label">Overview</span>
+    </button>
+    <button class="nav-btn" data-tab="rooms">
+      <div class="nav-icon-wrap"><span class="nav-icon">🚪</span></div>
+      <span class="nav-label">Rooms</span>
+    </button>
+    <button class="nav-btn" data-tab="payments">
+      <div class="nav-icon-wrap"><span class="nav-icon">💳</span></div>
+      <span class="nav-label">Payments</span>
+      <div class="nav-dot" id="payDot" style="display:none"></div>
+    </button>
+    <button class="nav-btn" data-tab="expenses">
+      <div class="nav-icon-wrap"><span class="nav-icon">📋</span></div>
+      <span class="nav-label">Expenses</span>
+    </button>
+    <button class="nav-btn" data-tab="tenants">
+      <div class="nav-icon-wrap"><span class="nav-icon">👥</span></div>
+      <span class="nav-label">Tenants</span>
+    </button>
+  </nav>
+</div>
+
+<!-- Modal container -->
+<div id="modalRoot"></div>
+<!-- Toast container -->
+<div id="toastRoot"></div>
+
+<script>
+// ─── Utilities ───────────────────────────────────────────────
+const MONTHS_FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const uid=()=>Math.random().toString(36).slice(2,9);
+const curMonth=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`};
+const fmtMonth=m=>{if(!m)return '';const[y,mo]=m.split('-');return `${MONTHS_FULL[parseInt(mo)-1]} ${y}`};
+const fmtDate=d=>{if(!d)return '—';return new Date(d+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})};
+const rupee=n=>('₹'+(n||0).toLocaleString('en-IN'));
+const qs=s=>document.querySelector(s);
+const qsa=s=>document.querySelectorAll(s);
+const el=(tag,cls,html,attrs={})=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));return e};
+
+// ─── State ───────────────────────────────────────────────────
+let state = {
+  tab: 'dashboard',
+  month: curMonth(),
+  search: '',
+  filter: 'all',
+  db: {rooms:[], tenants:[], payments:[], expenses:[]}
+};
+
+// Load from localStorage — users start fresh (demo data is gone)
+function loadDB(){
+  try {
+    const raw = localStorage.getItem('rentbook_pro_v1');
+    if(raw) state.db = JSON.parse(raw);
+  } catch(e){}
+}
+function saveDB(){
+  try { localStorage.setItem('rentbook_pro_v1', JSON.stringify(state.db)); } catch(e){}
+}
+loadDB();
+
+// ─── Helpers ─────────────────────────────────────────────────
+const getTenant=id=>state.db.tenants.find(t=>t.id===id);
+const getRoom=id=>state.db.rooms.find(r=>r.id===id);
+const getPayment=(tid,m)=>state.db.payments.find(p=>p.tenantId===tid&&p.month===m);
+const expCatIcon={'Electricity':'⚡','Water':'💧','Repairs':'🔧','Internet':'📶','Cleaning':'🧹','Security':'🔒','Other':'📦'};
+
+// ─── Toast ───────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type='success'){
+  clearTimeout(toastTimer);
+  const root=qs('#toastRoot'); root.innerHTML='';
+  const t=el('div','toast '+type,msg);
+  root.appendChild(t);
+  toastTimer=setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity 0.3s';setTimeout(()=>root.innerHTML='',300)},2400);
+}
+
+// ─── Modal ───────────────────────────────────────────────────
+function closeModal(){qs('#modalRoot').innerHTML=''}
+
+function openModal(html, onClose){
+  const root=qs('#modalRoot'); root.innerHTML='';
+  const overlay=el('div','overlay');
+  const sheet=el('div','sheet');
+  sheet.innerHTML=`<div class="sheet-handle"></div>${html}`;
+  overlay.appendChild(sheet);
+  overlay.addEventListener('click',e=>{if(e.target===overlay){closeModal();if(onClose)onClose()}});
+  root.appendChild(overlay);
+  sheet.addEventListener('click',e=>e.stopPropagation());
+}
+
+// ─── Badge helper ─────────────────────────────────────────────
+function badge(status){
+  const icons={paid:'✓',pending:'●',partial:'◑',vacant:'○'};
+  const labels={paid:'Paid',pending:'Pending',partial:'Partial',vacant:'Vacant'};
+  return `<span class="badge ${status}">${icons[status]||''} ${labels[status]||status}</span>`;
+}
+
+// ─── WhatsApp Remind ──────────────────────────────────────────
+function waRemind(tenant, room, pay){
+  const due=pay?(pay.amount-pay.paid):tenant.rent;
+  const msg=`Hello ${tenant.name}, your rent for Room ${room.number} (${fmtMonth(state.month)}) is due. Please pay ${rupee(due)}. Thank you! 🙏`;
+  window.open(`https://wa.me/91${tenant.phone}?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ══════════════════════════════════════════════════════════════
+// ─── RENDER TABS ──────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+
+function renderDashboard(){
+  const m=state.month;
+  const mPays=state.db.payments.filter(p=>p.month===m);
+  const collected=mPays.reduce((a,p)=>a+p.paid,0);
+  const totalRent=state.db.rooms.filter(r=>r.status==='occupied').reduce((a,r)=>{const t=getTenant(r.tenantId);return a+(t?t.rent:0)},0);
+  const pending=mPays.filter(p=>p.status==='pending'||p.status==='partial');
+  const expenses=state.db.expenses.filter(e=>e.month===m).reduce((a,e)=>a+e.amount,0);
+  const net=collected-expenses;
+  const vacant=state.db.rooms.filter(r=>r.status==='vacant').length;
+  const occupied=state.db.rooms.filter(r=>r.status==='occupied').length;
+  const pct=totalRent?Math.min(100,Math.round(collected/totalRent*100)):0;
+
+  let html=`
+  <div class="month-bar">
+    <span style="font-size:12px;color:var(--text3);font-weight:700">📅 Month</span>
+    <input type="month" id="dashMonth" value="${m}" style="background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:7px 11px;font-size:12px;font-family:var(--font);outline:none;cursor:pointer"/>
+  </div>
+
+  <div class="income-hero">
+    <div class="hero-label">Total Collected</div>
+    <div class="hero-amount">${rupee(collected)}</div>
+    <div class="hero-month">${fmtMonth(m)}</div>
+    <div style="margin-top:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:11px;color:rgba(255,255,255,0.6)">${pct}% of ${rupee(totalRent)}</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.6)">${mPays.filter(p=>p.status==='paid').length}/${state.db.rooms.filter(r=>r.status==='occupied').length} tenants</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.15);border-radius:99px;height:6px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:rgba(255,255,255,0.85);border-radius:99px;transition:width 0.6s"></div>
+      </div>
+    </div>
+    <div class="hero-pills">
+      <div class="hero-pill">💸 Exp ${rupee(expenses)}</div>
+      <div class="hero-pill" style="color:${net>=0?'rgba(255,255,255,0.9)':'#ffb3b3'}">📈 Net ${rupee(net)}</div>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card" style="--c:#6c5ce7">
+      <div class="stat-val">${state.db.rooms.length}</div>
+      <div class="stat-lbl">Total Rooms</div>
+    </div>
+    <div class="stat-card" style="--c:#00c9a7">
+      <div class="stat-val">${occupied}</div>
+      <div class="stat-lbl">Occupied</div>
+    </div>
+    <div class="stat-card" style="--c:#6060a0">
+      <div class="stat-val">${vacant}</div>
+      <div class="stat-lbl">Vacant</div>
+    </div>
+    <div class="stat-card" style="--c:${pending.length>0?'#ff6b6b':'#00c9a7'}">
+      <div class="stat-val">${pending.length}</div>
+      <div class="stat-lbl">Pending</div>
+    </div>
+  </div>`;
+
+  if(pending.length>0){
+    html+=`<div class="section-hdr"><span class="section-title">⚠️ Needs Attention</span></div>`;
+    pending.forEach(p=>{
+      const tenant=getTenant(p.tenantId), room=getRoom(p.roomId);
+      if(!tenant||!room) return;
+      const due=p.amount-p.paid;
+      html+=`
+      <div class="card ${p.status==='partial'?'alert-yellow':'alert-red'}" data-action="openPayment" data-tid="${tenant.id}" data-rid="${room.id}" style="cursor:pointer">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+            <div class="room-num occ">${room.number}</div>
+            <div>
+              <div style="font-weight:800;font-size:14px">${tenant.name}</div>
+              <div style="color:var(--text3);font-size:11px;margin-top:1px">Due ${rupee(due)}</div>
+            </div>
+          </div>
+          ${badge(p.status)}
+        </div>
+        <div class="action-row">
+          <button class="btn btn-wa btn-sm" data-action="waRemind" data-tid="${tenant.id}" data-rid="${room.id}" data-pid="${p.id}">💬 Remind</button>
+          <button class="btn btn-primary btn-sm" data-action="openPayment" data-tid="${tenant.id}" data-rid="${room.id}">✓ Record</button>
+        </div>
+      </div>`;
+    });
+  } else {
+    html+=`<div class="empty"><div class="empty-icon">🎉</div><div class="empty-title">All rents collected!</div><div style="font-size:12px;margin-top:4px">${fmtMonth(m)} is clear</div></div>`;
+  }
+
+  return html;
+}
+
+function renderRooms(){
+  const q=state.search.toLowerCase();
+  const filtered=state.db.rooms.filter(r=>{
+    if(state.filter==='vacant'&&r.status!=='vacant') return false;
+    if(state.filter==='occupied'&&r.status!=='occupied') return false;
+    if(q){
+      const t=r.tenantId?getTenant(r.tenantId):null;
+      if(!r.number.toLowerCase().includes(q)&&!(r.floor||'').toLowerCase().includes(q)&&!(t&&t.name.toLowerCase().includes(q))) return false;
+    }
+    return true;
+  });
+
+  let html=`
+  <div class="search-wrap">
+    <span style="color:var(--text3);font-size:14px">🔍</span>
+    <input id="searchInp" placeholder="Search room or tenant…" value="${state.search}"/>
+    ${state.search?`<button onclick="clearSearch()" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0">✕</button>`:''}
+  </div>
+  <div class="pill-row">
+    <button class="pill ${state.filter==='all'?'active':''}" data-filter="all">All (${state.db.rooms.length})</button>
+    <button class="pill ${state.filter==='occupied'?'active':''}" data-filter="occupied">Occupied (${state.db.rooms.filter(r=>r.status==='occupied').length})</button>
+    <button class="pill ${state.filter==='vacant'?'active':''}" data-filter="vacant">Vacant (${state.db.rooms.filter(r=>r.status==='vacant').length})</button>
+  </div>`;
+
+  if(filtered.length===0) html+=`<div class="empty"><div class="empty-icon">🚪</div><div class="empty-title">No rooms found</div></div>`;
+
+  filtered.forEach(room=>{
+    const tenant=room.tenantId?getTenant(room.tenantId):null;
+    const pay=tenant?getPayment(tenant.id,state.month):null;
+    const ps=pay?.status||'pending';
+    html+=`
+    <div class="card ${tenant&&pay?('alert-'+(ps==='paid'?'green':ps==='partial'?'yellow':'red')):''}" ${tenant?`data-action="openTenant" data-tid="${tenant.id}" data-rid="${room.id}" style="cursor:pointer"`:''}">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+          <div class="room-num ${room.status==='occupied'?'occ':'vac'}">${room.number}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:800;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tenant?tenant.name:'<span style="color:var(--text3)">Vacant</span>'}</div>
+            <div style="color:var(--text3);font-size:11px;margin-top:2px">${room.floor||''}${room.floor&&tenant?' · ':''}${tenant?`${rupee(tenant.rent)}/mo`:''}</div>
+          </div>
+        </div>
+        ${tenant&&pay?badge(ps):tenant?badge('pending'):badge('vacant')}
+      </div>
+      ${tenant&&(!pay||ps!=='paid')?`
+      <div class="action-row">
+        <button class="btn btn-wa btn-sm" data-action="waRemind" data-tid="${tenant.id}" data-rid="${room.id}" data-pid="${pay?.id||''}">💬 Remind</button>
+        <button class="btn btn-primary btn-sm" data-action="openPayment" data-tid="${tenant.id}" data-rid="${room.id}">✓ Record</button>
+      </div>`:''}
+      ${!tenant?`<button class="btn btn-primary btn-sm" style="margin-top:12px;width:100%" data-action="addTenant" data-rid="${room.id}">+ Add Tenant</button>`:''}
+    </div>`;
+  });
+  return html;
+}
+
+function renderPayments(){
+  const m=state.month;
+  const q=state.search.toLowerCase();
+  let totalRent=0, totalPaid=0;
+
+  const rows=state.db.rooms.filter(r=>r.status==='occupied').map(room=>{
+    const tenant=getTenant(room.tenantId); if(!tenant) return null;
+    const pay=getPayment(tenant.id,m);
+    if(state.filter==='pending'&&pay?.status==='paid') return null;
+    if(q&&!tenant.name.toLowerCase().includes(q)&&!room.number.toLowerCase().includes(q)) return null;
+    totalRent+=tenant.rent; totalPaid+=pay?.paid||0;
+    return {room,tenant,pay};
+  }).filter(Boolean);
+
+  const pct=totalRent?Math.min(100,Math.round(totalPaid/totalRent*100)):0;
+
+  let html=`
+  <div style="padding:8px 16px 4px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px">
+      <input type="month" id="payMonth" value="${m}" style="background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:7px 11px;font-size:12px;font-family:var(--font);outline:none;cursor:pointer;flex:1"/>
+      <div style="display:flex;gap:6px">
+        <button class="pill ${state.filter==='all'?'active':''}" data-filter="all">All</button>
+        <button class="pill ${state.filter==='pending'?'active':''}" data-filter="pending">Pending</button>
+      </div>
+    </div>
+    <div class="card" style="margin:0 0 10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:12px;color:var(--text3);font-weight:700">Collection Progress</span>
+        <span style="font-weight:800;font-size:13px">${rupee(totalPaid)} / ${rupee(totalRent)}</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-bar" style="width:${pct}%"></div></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">${pct}% collected · ${fmtMonth(m)}</div>
+    </div>
+  </div>
+  <div class="search-wrap" style="margin-top:0">
+    <span style="color:var(--text3);font-size:14px">🔍</span>
+    <input id="searchInp" placeholder="Search tenant or room…" value="${state.search}"/>
+  </div>`;
+
+  if(rows.length===0) html+=`<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">All clear!</div></div>`;
+
+  rows.forEach(({room,tenant,pay})=>{
+    const s=pay?.status||'pending';
+    html+=`
+    <div class="card ${s==='paid'?'alert-green':s==='partial'?'alert-yellow':'alert-red'}" data-action="openPayment" data-tid="${tenant.id}" data-rid="${room.id}" style="cursor:pointer">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">
+          <div class="room-num occ">${room.number}</div>
+          <div>
+            <div style="font-weight:800;font-size:14px">${tenant.name}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${rupee(tenant.rent)}/mo · ${pay?`Paid ${rupee(pay.paid)}`:'No record'}</div>
+          </div>
+        </div>
+        ${badge(s)}
+      </div>
+      ${pay?.note?`<div style="font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">💬 ${pay.note}</div>`:''}
+      ${pay?.date?`<div style="font-size:10px;color:var(--text3);margin-top:3px">📅 ${fmtDate(pay.date)}</div>`:''}
+    </div>`;
+  });
+  return html;
+}
+
+function renderExpenses(){
+  const m=state.month;
+  const exps=state.db.expenses.filter(e=>e.month===m);
+  const total=exps.reduce((a,e)=>a+e.amount,0);
+  const bycat={};
+  exps.forEach(e=>{bycat[e.category]=(bycat[e.category]||0)+e.amount});
+
+  let html=`
+  <div class="month-bar">
+    <span style="font-size:12px;color:var(--text3);font-weight:700">📅 Month</span>
+    <input type="month" id="expMonth" value="${m}" style="background:var(--bg3);border:1.5px solid var(--border);border-radius:10px;color:var(--text);padding:7px 11px;font-size:12px;font-family:var(--font);outline:none;cursor:pointer"/>
+  </div>
+  <div class="income-hero" style="background:linear-gradient(135deg,#1a1a3e,#2d2d5e)">
+    <div class="hero-label">Total Expenses</div>
+    <div class="hero-amount">${rupee(total)}</div>
+    <div class="hero-month">${fmtMonth(m)}</div>
+    <div class="hero-pills">
+      ${Object.entries(bycat).map(([c,v])=>`<div class="hero-pill">${expCatIcon[c]||'📦'} ${rupee(v)}</div>`).join('')}
+    </div>
+  </div>
+  <div class="section-hdr">
+    <span class="section-title">All Expenses</span>
+    <span class="section-action" data-action="openAddExpense">+ Add</span>
+  </div>`;
+
+  if(exps.length===0) html+=`<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No expenses yet</div><button class="btn btn-primary" style="margin-top:16px" data-action="openAddExpense">+ Add Expense</button></div>`;
+
+  exps.forEach(e=>{
+    html+=`
+    <div class="card" style="cursor:pointer" data-action="editExpense" data-eid="${e.id}">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px;flex:1">
+          <div class="expense-cat-icon" style="background:rgba(108,92,231,0.12)">${expCatIcon[e.category]||'📦'}</div>
+          <div>
+            <div style="font-weight:800;font-size:14px">${e.category}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px">${fmtDate(e.date)}${e.note?' · '+e.note:''}</div>
+          </div>
+        </div>
+        <div style="font-weight:900;font-size:16px;font-family:var(--mono)">${rupee(e.amount)}</div>
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+function renderTenants(){
+  const q=state.search.toLowerCase();
+  const filtered=state.db.tenants.filter(t=>{
+    if(q&&!t.name.toLowerCase().includes(q)&&!t.phone.includes(q)) return false;
+    return true;
+  });
+
+  let html=`
+  <div class="search-wrap">
+    <span style="color:var(--text3);font-size:14px">🔍</span>
+    <input id="searchInp" placeholder="Search by name or phone…" value="${state.search}"/>
+    ${state.search?`<button onclick="clearSearch()" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0">✕</button>`:''}
+  </div>`;
+
+  if(filtered.length===0) html+=`<div class="empty"><div class="empty-icon">👥</div><div class="empty-title">No tenants yet</div><div style="font-size:12px;margin-top:4px">Add rooms first, then add tenants</div></div>`;
+
+  filtered.forEach(t=>{
+    const room=getRoom(t.roomId);
+    const pay=getPayment(t.id,state.month);
+    const s=pay?.status||'pending';
+    html+=`
+    <div class="card" data-action="openTenant" data-tid="${t.id}" data-rid="${t.roomId}" style="cursor:pointer">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#4834d4);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;color:#fff;flex-shrink:0">
+          ${t.name.charAt(0).toUpperCase()}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:800;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name}</div>
+          <div style="color:var(--text3);font-size:11px;margin-top:2px">${room?`Room ${room.number}`:''} · ${rupee(t.rent)}/mo · 📞 ${t.phone}</div>
+        </div>
+        ${badge(s)}
+      </div>
+    </div>`;
+  });
+  return html;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ─── MODALS ───────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+
+function openPaymentModal(tenantId, roomId){
+  const tenant=getTenant(tenantId), room=getRoom(roomId);
+  if(!tenant||!room) return;
+  const pay=getPayment(tenantId,state.month)||{amount:tenant.rent,paid:0,status:'pending',date:'',note:''};
+  openModal(`
+    <div class="sheet-header">
+      <div class="sheet-title">💳 Record Payment</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">${tenant.name} · Room ${room.number} · ${fmtMonth(state.month)}</div>
+    </div>
+    <div class="sheet-body">
+      <div class="field"><label>Rent Amount</label><input class="inp" id="pAmt" type="number" value="${pay.amount}" placeholder="Enter amount"/></div>
+      <div class="field"><label>Amount Paid</label><input class="inp" id="pPaid" type="number" value="${pay.paid}" placeholder="Enter paid amount"/></div>
+      <div class="field">
+        <label>Payment Status</label>
+        <select class="inp" id="pStatus">
+          <option value="paid" ${pay.status==='paid'?'selected':''}>✓ Paid</option>
+          <option value="partial" ${pay.status==='partial'?'selected':''}>◑ Partial</option>
+          <option value="pending" ${pay.status==='pending'?'selected':''}>● Pending</option>
+        </select>
+      </div>
+      <div class="field"><label>Payment Date</label><input class="inp" id="pDate" type="date" value="${pay.date||new Date().toISOString().slice(0,10)}"/></div>
+      <div class="field"><label>Note (UPI / Cash / Cheque…)</label><input class="inp" id="pNote" value="${pay.note||''}" placeholder="e.g. UPI, Cash"/></div>
+      <button class="btn btn-primary" id="savePayBtn">💾 Save Payment</button>
+      <div style="height:10px"></div>
+      <button class="btn btn-wa" style="width:100%" onclick="waRemindFromModal('${tenantId}','${roomId}')">💬 Send WhatsApp Reminder</button>
+    </div>
+  `);
+  qs('#savePayBtn').onclick=()=>{
+    const amt=parseInt(qs('#pAmt').value)||0;
+    const paid=parseInt(qs('#pPaid').value)||0;
+    const status=qs('#pStatus').value;
+    const date=qs('#pDate').value;
+    const note=qs('#pNote').value.trim();
+    const db=state.db;
+    const idx=db.payments.findIndex(p=>p.tenantId===tenantId&&p.month===state.month);
+    const rec={id:idx>=0?db.payments[idx].id:uid(),tenantId,roomId,month:state.month,amount:amt,paid,status,date,note};
+    if(idx>=0) db.payments[idx]=rec; else db.payments.push(rec);
+    saveDB(); closeModal(); render(); showToast('Payment saved!');
+  };
+}
+
+function waRemindFromModal(tid,rid){
+  const tenant=getTenant(tid), room=getRoom(rid);
+  const pay=getPayment(tid,state.month);
+  if(tenant&&room) waRemind(tenant,room,pay);
+}
+
+function openTenantDetail(tenantId, roomId){
+  const tenant=getTenant(tenantId), room=getRoom(roomId);
+  if(!tenant||!room) return;
+  const pay=getPayment(tenantId,state.month);
+  const s=pay?.status||'pending';
+  const history=state.db.payments.filter(p=>p.tenantId===tenantId).sort((a,b)=>b.month.localeCompare(a.month)).slice(0,6);
+  openModal(`
+    <div class="sheet-header">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:44px;height:44px;border-radius:13px;background:linear-gradient(135deg,var(--accent),#4834d4);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff">${tenant.name.charAt(0)}</div>
+        <div>
+          <div class="sheet-title">${tenant.name}</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:2px">Room ${room.number} · ${room.floor||''}</div>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="background:var(--bg3);border-radius:12px;padding:13px;border:1px solid var(--border)">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:4px">Monthly Rent</div>
+          <div style="font-size:20px;font-weight:900;color:var(--accent)">${rupee(tenant.rent)}</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:12px;padding:13px;border:1px solid var(--border)">
+          <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;margin-bottom:4px">Deposit</div>
+          <div style="font-size:20px;font-weight:900;color:var(--green)">${rupee(tenant.deposit)}</div>
+        </div>
+      </div>
+      <div style="background:var(--bg3);border-radius:12px;padding:13px;border:1px solid var(--border);margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--text3);font-weight:700">Current Month</span>
+          ${badge(s)}
+        </div>
+        <div style="font-size:13px;font-weight:700">${pay?`Paid ${rupee(pay.paid)} of ${rupee(pay.amount)}`:'No payment recorded'}</div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">📞 ${tenant.phone}${tenant.aadhaar?` · 🪪 ${tenant.aadhaar}`:''}</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:16px">📅 Joined ${fmtDate(tenant.joining)}</div>
+      ${tenant.notes?`<div style="background:var(--bg3);border-radius:10px;padding:11px;font-size:12px;color:var(--text2);margin-bottom:16px;border:1px solid var(--border)">📝 ${tenant.notes}</div>`:''}
+      ${history.length>0?`
+      <div style="font-size:11px;font-weight:900;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Payment History</div>
+      ${history.map(h=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;font-weight:700">${fmtMonth(h.month)}</span>
+        <div style="display:flex;align-items:center;gap:8px">${rupee(h.paid)}${badge(h.status)}</div>
+      </div>`).join('')}`:''}
+      <div style="height:12px"></div>
+      <button class="btn btn-primary" onclick="closeModal();openPaymentModal('${tenantId}','${roomId}')">💳 Record Payment</button>
+      <div style="height:8px"></div>
+      <button class="btn btn-ghost" style="width:100%" onclick="closeModal();openEditTenant('${tenantId}')">✏️ Edit Tenant</button>
+      <div style="height:8px"></div>
+      <button class="btn btn-danger" onclick="deleteTenant('${tenantId}','${roomId}')">🗑 Remove Tenant</button>
+    </div>
+  `);
+}
+
+function openAddRoom(){
+  openModal(`
+    <div class="sheet-header"><div class="sheet-title">🚪 Add Room</div></div>
+    <div class="sheet-body">
+      <div class="field"><label>Room Number</label><input class="inp" id="rNum" placeholder="e.g. 101"/></div>
+      <div class="field">
+        <label>Floor</label>
+        <select class="inp" id="rFloor">
+          <option value="Ground">Ground Floor</option>
+          <option value="First">First Floor</option>
+          <option value="Second">Second Floor</option>
+          <option value="Third">Third Floor</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="saveRoomBtn">💾 Add Room</button>
+    </div>
+  `);
+  qs('#saveRoomBtn').onclick=()=>{
+    const num=qs('#rNum').value.trim();
+    if(!num){showToast('Enter room number','error');return}
+    if(state.db.rooms.find(r=>r.number===num)){showToast('Room already exists','error');return}
+    state.db.rooms.push({id:uid(),number:num,floor:qs('#rFloor').value,status:'vacant',tenantId:null});
+    saveDB(); closeModal(); render(); showToast('Room added!');
+  };
+}
+
+function openAddTenant(roomId){
+  openModal(`
+    <div class="sheet-header"><div class="sheet-title">👤 Add Tenant</div><div style="font-size:12px;color:var(--text3);margin-top:4px">Room ${getRoom(roomId)?.number||''}</div></div>
+    <div class="sheet-body">
+      <div class="field"><label>Full Name *</label><input class="inp" id="tName" placeholder="Tenant's full name"/></div>
+      <div class="field"><label>Phone *</label><input class="inp" id="tPhone" type="tel" placeholder="10-digit mobile number"/></div>
+      <div class="field"><label>Monthly Rent (₹)</label><input class="inp" id="tRent" type="number" placeholder="e.g. 8000"/></div>
+      <div class="field"><label>Security Deposit (₹)</label><input class="inp" id="tDeposit" type="number" placeholder="e.g. 10000"/></div>
+      <div class="field"><label>Joining Date</label><input class="inp" id="tJoin" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+      <div class="field"><label>Aadhaar / ID</label><input class="inp" id="tAadhaar" placeholder="XXXX-XXXX-XXXX"/></div>
+      <div class="field"><label>Notes</label><textarea class="inp" id="tNotes" rows="2" placeholder="Any notes…"></textarea></div>
+      <button class="btn btn-primary" id="saveTenantBtn">💾 Add Tenant</button>
+    </div>
+  `);
+  qs('#saveTenantBtn').onclick=()=>{
+    const name=qs('#tName').value.trim();
+    const phone=qs('#tPhone').value.trim();
+    if(!name||!phone){showToast('Name & phone required','error');return}
+    const id=uid();
+    state.db.tenants.push({id,name,phone,aadhaar:qs('#tAadhaar').value.trim(),joining:qs('#tJoin').value,deposit:parseInt(qs('#tDeposit').value)||0,rent:parseInt(qs('#tRent').value)||0,notes:qs('#tNotes').value.trim(),roomId});
+    const room=state.db.rooms.find(r=>r.id===roomId);
+    if(room){room.status='occupied';room.tenantId=id}
+    saveDB(); closeModal(); render(); showToast('Tenant added!');
+  };
+}
+
+function openEditTenant(tenantId){
+  const t=getTenant(tenantId); if(!t) return;
+  openModal(`
+    <div class="sheet-header"><div class="sheet-title">✏️ Edit Tenant</div></div>
+    <div class="sheet-body">
+      <div class="field"><label>Full Name</label><input class="inp" id="tName" value="${t.name}"/></div>
+      <div class="field"><label>Phone</label><input class="inp" id="tPhone" type="tel" value="${t.phone}"/></div>
+      <div class="field"><label>Monthly Rent (₹)</label><input class="inp" id="tRent" type="number" value="${t.rent}"/></div>
+      <div class="field"><label>Security Deposit (₹)</label><input class="inp" id="tDeposit" type="number" value="${t.deposit}"/></div>
+      <div class="field"><label>Joining Date</label><input class="inp" id="tJoin" type="date" value="${t.joining}"/></div>
+      <div class="field"><label>Aadhaar / ID</label><input class="inp" id="tAadhaar" value="${t.aadhaar||''}"/></div>
+      <div class="field"><label>Notes</label><textarea class="inp" id="tNotes" rows="2">${t.notes||''}</textarea></div>
+      <button class="btn btn-primary" id="saveTenantBtn">💾 Save Changes</button>
+    </div>
+  `);
+  qs('#saveTenantBtn').onclick=()=>{
+    t.name=qs('#tName').value.trim();
+    t.phone=qs('#tPhone').value.trim();
+    t.rent=parseInt(qs('#tRent').value)||0;
+    t.deposit=parseInt(qs('#tDeposit').value)||0;
+    t.joining=qs('#tJoin').value;
+    t.aadhaar=qs('#tAadhaar').value.trim();
+    t.notes=qs('#tNotes').value.trim();
+    saveDB(); closeModal(); render(); showToast('Tenant updated!');
+  };
+}
+
+function deleteTenant(tenantId, roomId){
+  if(!confirm('Remove this tenant?')) return;
+  state.db.tenants=state.db.tenants.filter(t=>t.id!==tenantId);
+  const room=state.db.rooms.find(r=>r.id===roomId);
+  if(room){room.status='vacant';room.tenantId=null}
+  saveDB(); closeModal(); render(); showToast('Tenant removed');
+}
+
+function openAddExpense(){
+  openModal(`
+    <div class="sheet-header"><div class="sheet-title">📋 Add Expense</div><div style="font-size:12px;color:var(--text3);margin-top:4px">${fmtMonth(state.month)}</div></div>
+    <div class="sheet-body">
+      <div class="field">
+        <label>Category</label>
+        <select class="inp" id="eCat">
+          ${Object.keys(expCatIcon).map(c=>`<option value="${c}">${expCatIcon[c]} ${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Amount (₹)</label><input class="inp" id="eAmt" type="number" placeholder="e.g. 3200"/></div>
+      <div class="field"><label>Date</label><input class="inp" id="eDate" type="date" value="${new Date().toISOString().slice(0,10)}"/></div>
+      <div class="field"><label>Note</label><input class="inp" id="eNote" placeholder="Optional note…"/></div>
+      <button class="btn btn-primary" id="saveExpBtn">💾 Add Expense</button>
+    </div>
+  `);
+  qs('#saveExpBtn').onclick=()=>{
+    const amt=parseInt(qs('#eAmt').value)||0;
+    if(!amt){showToast('Enter amount','error');return}
+    state.db.expenses.push({id:uid(),month:state.month,category:qs('#eCat').value,amount:amt,date:qs('#eDate').value,note:qs('#eNote').value.trim()});
+    saveDB(); closeModal(); render(); showToast('Expense added!');
+  };
+}
+
+function editExpense(eid){
+  const e=state.db.expenses.find(x=>x.id===eid); if(!e) return;
+  openModal(`
+    <div class="sheet-header"><div class="sheet-title">✏️ Edit Expense</div></div>
+    <div class="sheet-body">
+      <div class="field">
+        <label>Category</label>
+        <select class="inp" id="eCat">
+          ${Object.keys(expCatIcon).map(c=>`<option value="${c}" ${e.category===c?'selected':''}>${expCatIcon[c]} ${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Amount (₹)</label><input class="inp" id="eAmt" type="number" value="${e.amount}"/></div>
+      <div class="field"><label>Date</label><input class="inp" id="eDate" type="date" value="${e.date}"/></div>
+      <div class="field"><label>Note</label><input class="inp" id="eNote" value="${e.note||''}"/></div>
+      <button class="btn btn-primary" id="saveExpBtn">💾 Save</button>
+      <div style="height:8px"></div>
+      <button class="btn btn-danger" onclick="deleteExpense('${eid}')">🗑 Delete</button>
+    </div>
+  `);
+  qs('#saveExpBtn').onclick=()=>{
+    e.category=qs('#eCat').value;
+    e.amount=parseInt(qs('#eAmt').value)||0;
+    e.date=qs('#eDate').value;
+    e.note=qs('#eNote').value.trim();
+    saveDB(); closeModal(); render(); showToast('Expense updated!');
+  };
+}
+
+function deleteExpense(eid){
+  state.db.expenses=state.db.expenses.filter(e=>e.id!==eid);
+  saveDB(); closeModal(); render(); showToast('Expense deleted');
+}
+
+function openAddQuickModal(){
+  const tab=state.tab;
+  if(tab==='rooms') openAddRoom();
+  else if(tab==='expenses') openAddExpense();
+  else if(tab==='tenants'||tab==='dashboard'){
+    const vacant=state.db.rooms.filter(r=>r.status==='vacant');
+    if(vacant.length>0) openAddTenant(vacant[0].id);
+    else openAddRoom();
+  } else openAddRoom();
+}
+
+// ══════════════════════════════════════════════════════════════
+// ─── RENDER ENGINE ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+
+function render(){
+  const content=qs('#content');
+  const headerSub=qs('#headerSub');
+
+  // Nav active state
+  qsa('.nav-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab===state.tab);
+  });
+
+  // Pending dot
+  const pending=state.db.payments.filter(p=>p.month===state.month&&(p.status==='pending'||p.status==='partial'));
+  const payDot=qs('#payDot');
+  if(payDot) payDot.style.display=pending.length>0?'block':'none';
+
+  let html='';
+  if(state.tab==='dashboard'){headerSub.textContent='Overview'; html=renderDashboard();}
+  else if(state.tab==='rooms'){headerSub.textContent=`${state.db.rooms.length} Rooms`; html=renderRooms();}
+  else if(state.tab==='payments'){headerSub.textContent=fmtMonth(state.month); html=renderPayments();}
+  else if(state.tab==='expenses'){headerSub.textContent='Expenses'; html=renderExpenses();}
+  else if(state.tab==='tenants'){headerSub.textContent=`${state.db.tenants.length} Tenants`; html=renderTenants();}
+
+  content.innerHTML=html;
+  bindEvents();
+}
+
+function bindEvents(){
+  // Delegate data-action clicks
+  qs('#content').addEventListener('click', e=>{
+    const btn=e.target.closest('[data-action]');
+    if(!btn) return;
+    e.stopPropagation();
+    const a=btn.dataset.action;
+    if(a==='openPayment') openPaymentModal(btn.dataset.tid, btn.dataset.rid);
+    else if(a==='openTenant') openTenantDetail(btn.dataset.tid, btn.dataset.rid);
+    else if(a==='addTenant') openAddTenant(btn.dataset.rid);
+    else if(a==='waRemind'){
+      const t=getTenant(btn.dataset.tid), r=getRoom(btn.dataset.rid);
+      const p=btn.dataset.pid?state.db.payments.find(x=>x.id===btn.dataset.pid):null;
+      if(t&&r) waRemind(t,r,p);
+    }
+    else if(a==='openAddExpense') openAddExpense();
+    else if(a==='editExpense') editExpense(btn.dataset.eid);
+  });
+
+  // Filter pills
+  qsa('[data-filter]').forEach(p=>{
+    p.addEventListener('click', ()=>{state.filter=p.dataset.filter; render()});
+  });
+
+  // Search inputs
+  const si=qs('#searchInp');
+  if(si){
+    si.addEventListener('input', e=>{state.search=e.target.value; render()});
+    si.addEventListener('click', e=>e.stopPropagation());
+  }
+
+  // Month inputs
+  const dm=qs('#dashMonth'); if(dm) dm.addEventListener('change',e=>{state.month=e.target.value;render()});
+  const pm=qs('#payMonth'); if(pm) pm.addEventListener('change',e=>{state.month=e.target.value;render()});
+  const em=qs('#expMonth'); if(em) em.addEventListener('change',e=>{state.month=e.target.value;render()});
+}
+
+function clearSearch(){state.search='';render();}
+
+// ─── Nav tab clicks ──────────────────────────────────────────
+qsa('.nav-btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    state.tab=b.dataset.tab;
+    state.search='';
+    state.filter='all';
+    render();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+// ─── Header buttons ──────────────────────────────────────────
+qs('#addBtn').addEventListener('click', openAddQuickModal);
+qs('#searchToggleBtn').addEventListener('click', ()=>{
+  const si=qs('#searchInp');
+  if(si) si.focus();
+});
+
+// ─── PWA Install ─────────────────────────────────────────────
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e=>{
+  e.preventDefault();
+  deferredPrompt=e;
+  showInstallBanner();
+});
+
+function showInstallBanner(){
+  const banner=el('div','install-banner');
+  banner.innerHTML=`
+    <div class="install-banner-icon">📲</div>
+    <div class="install-banner-text">
+      <div class="install-banner-title">Install RentBook</div>
+      <div class="install-banner-sub">Add to Home Screen for quick access</div>
+    </div>
+    <span class="install-banner-close" id="closeBanner">✕</span>
+  `;
+  banner.addEventListener('click', async e=>{
+    if(e.target.id==='closeBanner'){banner.remove();return}
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      const {outcome}=await deferredPrompt.userChoice;
+      deferredPrompt=null;
+      banner.remove();
+      if(outcome==='accepted') showToast('Installed! 🎉');
+    }
+  });
+  qs('#content').prepend(banner);
+}
+
+// Register service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+// ─── Init ─────────────────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
