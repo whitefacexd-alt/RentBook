@@ -141,6 +141,7 @@ const S = {
   formLabel:{fontSize:12,color:"#888",marginBottom:4},
   toast:{position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",color:"#fff",fontWeight:700,fontSize:13,padding:"10px 22px",borderRadius:20,zIndex:300,boxShadow:"0 4px 20px rgba(0,0,0,0.5)",whiteSpace:"nowrap"},
   emptyState:{textAlign:"center",padding:40,color:"#555",fontSize:14},
+  waBtn:{background:"linear-gradient(135deg,#25d366,#128c7e)",borderRadius:14,padding:"14px 16px",display:"flex",alignItems:"center",gap:14,marginBottom:12,color:"#fff",boxShadow:"0 4px 15px rgba(37,211,102,0.25)"},
   infoBox:{background:"#7b68ee11",border:"1px solid #7b68ee33",borderRadius:10,padding:"10px 12px",fontSize:12,color:"#aaa",lineHeight:1.7,marginBottom:12},
   warningBox:{background:"#f5a62311",border:"1px solid #f5a62333",borderRadius:10,padding:"10px 12px",fontSize:12,color:"#f5a623",lineHeight:1.7,marginBottom:12},
 };
@@ -462,6 +463,32 @@ function Payments({tenants,records,yk,settings,onPayment,onElec,selectedTenant,o
               ))}
             </div>
           )}
+
+          {(rec.status==="Pending"||rec.status==="Partial")&&tenant.phone&&(()=>{
+            const mo=MONTHS[parseInt(yk.split("-")[1])-1]+" "+yk.split("-")[0];
+            const pending=rec.totalPayable-rec.amountPaid;
+            let msg="";
+            if(rec.status==="Pending"){
+              msg="Namaskar "+tenant.name+" ji 🙏\n\n"+mo+" ka kiraya abhi pending hai.\n\n💰 Total: ₹"+rec.totalPayable.toLocaleString()+"\n\nKripya jald se jald payment kar dijiye.\n\nShukriya 🙏";
+            } else {
+              msg="Namaskar "+tenant.name+" ji 🙏\n\n"+mo+" ka kiraya aadha baaki hai.\n\n✅ Diya: ₹"+rec.amountPaid.toLocaleString()+"\n⏳ Baki: ₹"+pending.toLocaleString()+"\n💰 Total: ₹"+rec.totalPayable.toLocaleString()+"\n\nKripya baaki payment kar dijiye.\n\nShukriya 🙏";
+            }
+            const phone="91"+tenant.phone.replace(/\D/g,"").slice(-10);
+            const url="https://wa.me/"+phone+"?text="+encodeURIComponent(msg);
+            return (
+              <a href={url} target="_blank" rel="noopener noreferrer" style={{textDecoration:"none"}}>
+                <div style={S.waBtn}>
+                  <span style={{fontSize:22}}>💬</span>
+                  <div>
+                    <div style={{fontWeight:700,fontSize:14}}>WhatsApp Reminder</div>
+                    <div style={{fontSize:11,opacity:0.8}}>
+                      {rec.status==="Pending"?"Poora ₹"+rec.totalPayable.toLocaleString()+" pending":"₹"+pending.toLocaleString()+" baaki"} — tap to send
+                    </div>
+                  </div>
+                </div>
+              </a>
+            );
+          })()}
         </div>
       ):(
         <div style={S.emptyState}>👆 Upar se tenant select karo</div>
