@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RentBook">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<title>RentBook Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f0f1a;
+  --surface: #1a1a2e;
+  --surface2: #16213e;
+  --surface3: #0d1117;
+  --accent: #7c3aed;
+  --accent2: #a855f7;
+  --green: #10b981;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --blue: #3b82f6;
+  --text: #f1f5f9;
+  --text2: #94a3b8;
+  --text3: #475569;
+  --border: #2d2d4e;
+  --card: #1e1e35;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: 80px;
+}
+h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+
+/* TOP BAR */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(15,15,26,0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.topbar h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.topbar h1 span { color: var(--accent2); }
+.topbar-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 38px; height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.icon-btn:hover { border-color: var(--accent); color: var(--accent2); }
+
+/* NAV */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(15,15,26,0.97);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 10px 4px 8px;
+  cursor: pointer; transition: all 0.2s;
+  color: var(--text3); font-size: 10px; font-weight: 500;
+  border: none; background: transparent;
+}
+.nav-item .nav-icon { font-size: 20px; margin-bottom: 3px; }
+.nav-item.active { color: var(--accent2); }
+.nav-item.active .nav-icon { filter: drop-shadow(0 0 8px var(--accent2)); }
+
+/* PAGES */
+.page { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* CARDS */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.card-title { font-size: 14px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* STAT GRID */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.stat-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+.stat-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+.stat-value { font-size: 20px; font-weight: 700; font-family: 'Syne', sans-serif; }
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-value.orange { color: var(--orange); }
+.stat-value.purple { color: var(--accent2); }
+
+/* TENANT CARD */
+.tenant-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tenant-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.tenant-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.tenant-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700; font-family: 'Syne', sans-serif;
+  flex-shrink: 0;
+}
+.tenant-name { font-size: 16px; font-weight: 700; }
+.tenant-room { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.tenant-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.badge {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-green { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+.badge-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.badge-orange { background: rgba(245,158,11,0.15); color: var(--orange); border: 1px solid rgba(245,158,11,0.3); }
+.badge-purple { background: rgba(168,85,247,0.15); color: var(--accent2); border: 1px solid rgba(168,85,247,0.3); }
+.badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+
+/* AMOUNT DISPLAY */
+.amount-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.amount-row:last-child { border-bottom: none; }
+.amount-label { font-size: 13px; color: var(--text2); }
+.amount-val { font-size: 14px; font-weight: 600; }
+
+/* BUTTONS */
+.btn {
+  padding: 12px 20px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: all 0.2s; border: none;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+.btn-green { background: var(--green); color: white; }
+.btn-green:hover { opacity: 0.9; }
+.btn-orange { background: var(--orange); color: #1a1a2e; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent2); }
+.btn-whatsapp { background: #25D366; color: white; }
+.btn-whatsapp:hover { opacity: 0.9; }
+.btn-sm { padding: 7px 14px; font-size: 12px; border-radius: 8px; }
+.btn-block { width: 100%; margin-bottom: 8px; }
+
+/* FORMS */
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 13px; color: var(--text2); margin-bottom: 6px; display: block; font-weight: 500; }
+.form-input, .form-select {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+.form-input:focus, .form-select:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+}
+.form-input::placeholder { color: var(--text3); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* MODAL */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  align-items: flex-end; justify-content: center;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px;
+  width: 100%; max-width: 480px;
+  max-height: 90vh; overflow-y: auto;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; }
+
+/* PAYMENT HISTORY */
+.payment-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.payment-item:last-child { border-bottom: none; }
+.payment-left { display: flex; flex-direction: column; gap: 2px; }
+.payment-month { font-size: 13px; font-weight: 600; }
+.payment-date { font-size: 11px; color: var(--text3); }
+.payment-right { text-align: right; }
+.payment-amount { font-size: 15px; font-weight: 700; color: var(--green); }
+.payment-balance { font-size: 11px; color: var(--red); margin-top: 2px; }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+/* SECTION TITLE */
+.section-title {
+  font-size: 18px; font-weight: 800;
+  margin-bottom: 16px; color: var(--text);
+}
+
+/* ALERT */
+.alert {
+  padding: 12px 14px; border-radius: var(--radius-sm);
+  font-size: 13px; margin-bottom: 14px;
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.alert-info { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; }
+.alert-warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
+.alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+
+/* UNIT INFO BOX */
+.unit-info {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.unit-info-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+.unit-info-row span:first-child { color: var(--text2); }
+.unit-info-row span:last-child { font-weight: 600; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  font-size: 14px; font-weight: 500;
+  z-index: 999; opacity: 0;
+  transition: all 0.3s; white-space: nowrap;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center; padding: 48px 20px;
+  color: var(--text3);
+}
+.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 14px; }
+
+/* PROGRESS BAR */
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+/* MONTH SELECTOR */
+.month-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; }
+.month-tab {
+  flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface2); color: var(--text2);
+  transition: all 0.2s;
+}
+.month-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+/* FAB */
+.fab {
+  position: fixed; right: 20px; bottom: 90px;
+  width: 54px; height: 54px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; color: white; font-size: 24px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 4px 20px rgba(124,58,237,0.5);
+  transition: all 0.2s; z-index: 50;
+}
+.fab:hover { transform: scale(1.1); }
+
+/* EXPENSE ITEM */
+.expense-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.expense-item:last-child { border-bottom: none; }
+
+/* BACK BTN */
+.back-btn {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 14px; color: var(--text2);
+  cursor: pointer; margin-bottom: 20px;
+  background: none; border: none; padding: 0;
+}
+.back-btn:hover { color: var(--accent2); }
+
+/* BALANCE HIGHLIGHT */
+.balance-box {
+  background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(245,158,11,0.1));
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  text-align: center;
+  margin: 12px 0;
+}
+.balance-box .balance-label { font-size: 12px; color: var(--text3); margin-bottom: 4px; }
+.balance-box .balance-amount { font-size: 28px; font-weight: 800; color: var(--red); font-family: 'Syne', sans-serif; }
+
+.advance-box {
+  background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(59,130,246,0.1));
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  text-align: center;
+  margin: 12px 0;
+}
+.advance-box .advance-label { font-size: 12px; color: var(--text3); margin-bottom: 4px; }
+.advance-box .advance-amount { font-size: 24px; font-weight: 800; color: var(--green); font-family: 'Syne', sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <h1>🏠 Rent<span>Book</span></h1>
+  <div class="topbar-actions">
+    <button class="icon-btn" onclick="showSearch()" title="Search">🔍</button>
+    <button class="icon-btn" onclick="exportData()" title="Export">📤</button>
+  </div>
+</div>
+
+<!-- PAGES -->
+<div id="page-overview" class="page active">
+  <div id="overview-content"></div>
+</div>
+
+<div id="page-rooms" class="page">
+  <div id="rooms-content"></div>
+</div>
+
+<div id="page-payments" class="page">
+  <div id="payments-content"></div>
+</div>
+
+<div id="page-expenses" class="page">
+  <div id="expenses-content"></div>
+</div>
+
+<div id="page-tenants" class="page">
+  <div id="tenants-content"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active" onclick="navigate('overview')">
+    <span class="nav-icon">📊</span>Overview
+  </button>
+  <button class="nav-item" onclick="navigate('rooms')">
+    <span class="nav-icon">🚪</span>Rooms
+  </button>
+  <button class="nav-item" onclick="navigate('payments')">
+    <span class="nav-icon">💳</span>Payments
+  </button>
+  <button class="nav-item" onclick="navigate('expenses')">
+    <span class="nav-icon">📋</span>Expenses
+  </button>
+  <button class="nav-item" onclick="navigate('tenants')">
+    <span class="nav-icon">👥</span>Tenants
+  </button>
+</nav>
+
+<!-- FAB -->
+<button class="fab" id="main-fab" onclick="handleFAB()">＋</button>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODALS -->
+<div id="modal-overlay" class="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+// ===================== DATA STORE =====================
+const DB = {
+  get: (k) => { try { return JSON.parse(localStorage.getItem('rb_'+k) || 'null'); } catch(e) { return null; } },
+  set: (k, v) => localStorage.setItem('rb_'+k, JSON.stringify(v)),
+};
+
+function getData() {
+  return DB.get('data') || {
+    tenants: [],
+    payments: [],
+    expenses: [],
+    settings: { rentPerUnit: 8, currency: '₹', propertyName: 'My Property' }
+  };
+}
+function saveData(d) { DB.set('data', d); }
+
+// ===================== NAVIGATION =====================
+let currentPage = 'overview';
+function navigate(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  const pageOrder = ['overview','rooms','payments','expenses','tenants'];
+  navItems[pageOrder.indexOf(page)].classList.add('active');
+  renderPage(page);
+}
+
+function renderPage(page) {
+  if (page === 'overview') renderOverview();
+  else if (page === 'rooms') renderRooms();
+  else if (page === 'payments') renderPayments();
+  else if (page === 'expenses') renderExpenses();
+  else if (page === 'tenants') renderTenants();
+}
+
+// ===================== HELPERS =====================
+function fmt(n) {
+  const d = getData();
+  return d.settings.currency + Number(n||0).toLocaleString('en-IN');
+}
+function fmtDate(s) {
+  if (!s) return '-';
+  const d = new Date(s);
+  return d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+}
+function monthName(m) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if (!m) return '';
+  const [y,mo] = m.split('-');
+  return months[parseInt(mo)-1] + ' ' + y;
+}
+function currentMonth() {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;
+}
+function initials(name) {
+  if (!name) return '?';
+  return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+}
+function showToast(msg, dur=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+function handleFAB() {
+  if (currentPage === 'tenants') showAddTenantModal();
+  else if (currentPage === 'rooms') showAddTenantModal();
+  else if (currentPage === 'payments') showAddPaymentModal();
+  else if (currentPage === 'expenses') showAddExpenseModal();
+  else showAddTenantModal();
+}
+
+// ===================== MODAL =====================
+function openModal(html) {
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('active');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+// ===================== OVERVIEW =====================
+function renderOverview() {
+  const d = getData();
+  const tenants = d.tenants.filter(t => t.active !== false);
+  const cm = currentMonth();
+
+  let totalRent = 0, totalCollected = 0, totalPending = 0, totalBalance = 0;
+  let pendingTenants = [], partialTenants = [];
+
+  tenants.forEach(t => {
+    const due = calcDue(t, cm, d);
+    const paid = getMonthPaid(t.id, cm, d);
+    const balance = getBalance(t.id, d); // cumulative balance
+
+    if (due.totalDue > 0) {
+      totalRent += due.totalDue;
+      if (paid >= due.totalDue) {
+        totalCollected += due.totalDue;
+      } else {
+        totalCollected += paid;
+        const remaining = due.totalDue - paid;
+        totalPending += remaining;
+        if (paid > 0) partialTenants.push({t, due, paid, remaining});
+        else pendingTenants.push({t, due, paid, remaining});
+      }
+    }
+    if (balance < 0) totalBalance += balance;
+  });
+
+  let html = `
+  <div style="margin-bottom:20px">
+    <div style="font-size:24px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:4px">${d.settings.propertyName}</div>
+    <div style="color:var(--text2);font-size:13px">${tenants.length} Active Tenants • ${monthName(cm)}</div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-box">
+      <div class="stat-label">Total Rent</div>
+      <div class="stat-value purple">${fmt(totalRent)}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Collected</div>
+      <div class="stat-value green">${fmt(totalCollected)}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Pending</div>
+      <div class="stat-value red">${fmt(totalPending)}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Tenants</div>
+      <div class="stat-value">${tenants.length}</div>
+    </div>
+  </div>`;
+
+  if (pendingTenants.length > 0 || partialTenants.length > 0) {
+    html += `<div class="section-title" style="font-size:16px;margin-top:8px">⚠️ Needs Attention</div>`;
+  }
+
+  [...partialTenants, ...pendingTenants].forEach(({t, due, paid, remaining}) => {
+    const isPartial = paid > 0;
+    html += `
+    <div class="card" style="cursor:pointer" onclick="showTenantDetail('${t.id}')">
+      <div class="tenant-header">
+        <div class="tenant-avatar">${initials(t.name)}</div>
+        <div style="flex:1">
+          <div class="tenant-name">${t.name}</div>
+          <div class="tenant-room">Room ${t.room}</div>
+        </div>
+        <span class="badge ${isPartial ? 'badge-orange' : 'badge-red'}">${isPartial ? 'Partial' : 'Pending'}</span>
+      </div>
+      <div class="amount-row">
+        <span class="amount-label">Total Due</span>
+        <span class="amount-val">${fmt(due.totalDue)}</span>
+      </div>
+      <div class="amount-row">
+        <span class="amount-label">Paid</span>
+        <span class="amount-val" style="color:var(--green)">${fmt(paid)}</span>
+      </div>
+      <div class="amount-row" style="background:rgba(239,68,68,0.05);border-radius:8px;padding:8px;margin-top:6px;border:1px solid rgba(239,68,68,0.2)">
+        <span class="amount-label" style="color:var(--red);font-weight:600">⚡ Baki Bacha</span>
+        <span class="amount-val" style="color:var(--red);font-size:16px">${fmt(remaining)}</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();quickPay('${t.id}')">💰 Pay Now</button>
+        <button class="btn btn-whatsapp btn-sm" onclick="event.stopPropagation();sendWhatsApp('${t.id}','${cm}')">📱 WA Remind</button>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('overview-content').innerHTML = html;
+}
+
+// ===================== CALC DUE =====================
+// Calculate total due for a tenant for a given month
+function calcDue(tenant, month, d) {
+  const settings = d.settings;
+  const rentAmt = tenant.rentAmount || 0;
+
+  // Electricity calculation
+  let electricityAmt = 0;
+  let elecDetails = null;
+
+  if (tenant.electricityEnabled) {
+    const ratePerUnit = tenant.rentPerUnit || settings.rentPerUnit || 8;
+    const readings = tenant.readings || [];
+    // Find readings for this month
+    const monthReading = readings.find(r => r.month === month);
+    if (monthReading && monthReading.prevReading !== undefined && monthReading.currReading !== undefined) {
+      const unitsUsed = Math.max(0, monthReading.currReading - monthReading.prevReading);
+      electricityAmt = unitsUsed * ratePerUnit;
+      elecDetails = { prev: monthReading.prevReading, curr: monthReading.currReading, units: unitsUsed, rate: ratePerUnit, amount: electricityAmt };
+    }
+  }
+
+  const totalDue = rentAmt + electricityAmt;
+  return { rentAmt, electricityAmt, totalDue, elecDetails };
+}
+
+// Get total paid for a specific month (only payments marked for this month)
+function getMonthPaid(tenantId, month, d) {
+  return (d.payments || [])
+    .filter(p => p.tenantId === tenantId && p.month === month)
+    .reduce((s, p) => s + (p.amount || 0), 0);
+}
+
+// Get cumulative balance for a tenant (advance - pending across all months)
+// Positive = advance (tenant paid extra), Negative = tenant owes more
+function getBalance(tenantId, d) {
+  const tenant = d.tenants.find(t => t.id === tenantId);
+  if (!tenant) return 0;
+
+  const allPayments = (d.payments || []).filter(p => p.tenantId === tenantId);
+  const totalPaidAll = allPayments.reduce((s, p) => s + (p.amount || 0), 0);
+
+  // Get all months that have payments or readings
+  const months = new Set();
+  allPayments.forEach(p => { if (p.month) months.add(p.month); });
+
+  let totalDueAll = 0;
+  months.forEach(month => {
+    const due = calcDue(tenant, month, d);
+    totalDueAll += due.totalDue;
+  });
+
+  return totalPaidAll - totalDueAll; // positive = advance, negative = still owes
+}
+
+// ===================== ROOMS PAGE =====================
+function renderRooms() {
+  const d = getData();
+  const tenants = d.tenants;
+  const cm = currentMonth();
+
+  let html = `<div class="section-title">All Tenants</div>`;
+
+  if (tenants.length === 0) {
+    html += `<div class="empty-state"><div class="empty-icon">🚪</div><p>No tenants added yet.<br>Tap ＋ to add first tenant.</p></div>`;
+  } else {
+    tenants.forEach(t => {
+      const due = calcDue(t, cm, d);
+      const paid = getMonthPaid(t.id, cm, d);
+      const balance = getBalance(t.id, d);
+      const remaining = Math.max(0, due.totalDue - paid);
+      const isActive = t.active !== false;
+
+      let statusBadge = '';
+      if (!isActive) statusBadge = `<span class="badge badge-purple">Inactive</span>`;
+      else if (due.totalDue === 0) statusBadge = `<span class="badge badge-blue">No Due</span>`;
+      else if (paid >= due.totalDue) statusBadge = `<span class="badge badge-green">Paid ✓</span>`;
+      else if (paid > 0) statusBadge = `<span class="badge badge-orange">Partial</span>`;
+      else statusBadge = `<span class="badge badge-red">Pending</span>`;
+
+      html += `
+      <div class="tenant-card" onclick="showTenantDetail('${t.id}')">
+        <div class="tenant-header">
+          <div class="tenant-avatar" style="${!isActive ? 'opacity:0.5' : ''}">${initials(t.name)}</div>
+          <div style="flex:1">
+            <div class="tenant-name">${t.name}</div>
+            <div class="tenant-room">Room ${t.room} • Since ${fmtDate(t.joinDate)}</div>
+          </div>
+          ${statusBadge}
+        </div>
+        <div class="amount-row">
+          <span class="amount-label">Monthly Rent</span>
+          <span class="amount-val">${fmt(t.rentAmount)}</span>
+        </div>
+        ${t.electricityEnabled ? `
+        <div class="amount-row">
+          <span class="amount-label">⚡ Electricity</span>
+          <span class="amount-val" style="color:var(--orange)">${due.elecDetails ? fmt(due.elecDetails.amount) : 'No reading'}</span>
+        </div>` : ''}
+        ${remaining > 0 ? `
+        <div class="amount-row" style="background:rgba(239,68,68,0.05);border-radius:8px;padding:8px;margin-top:4px">
+          <span class="amount-label" style="color:var(--red)">Baki Bacha</span>
+          <span class="amount-val" style="color:var(--red)">${fmt(remaining)}</span>
+        </div>` : ''}
+        ${balance > 0 ? `
+        <div class="amount-row" style="background:rgba(16,185,129,0.05);border-radius:8px;padding:8px;margin-top:4px">
+          <span class="amount-label" style="color:var(--green)">Advance</span>
+          <span class="amount-val" style="color:var(--green)">${fmt(balance)}</span>
+        </div>` : ''}
+      </div>`;
+    });
+  }
+
+  document.getElementById('rooms-content').innerHTML = html;
+}
+
+// ===================== TENANT DETAIL =====================
+function showTenantDetail(id) {
+  const d = getData();
+  const tenant = d.tenants.find(t => t.id === id);
+  if (!tenant) return;
+
+  const cm = currentMonth();
+  const due = calcDue(tenant, cm, d);
+  const paid = getMonthPaid(id, cm, d);
+  const remaining = Math.max(0, due.totalDue - paid);
+  const balance = getBalance(id, d);
+  const isAdvance = balance > 0;
+  const isOwe = balance < 0;
+
+  const allPayments = (d.payments || []).filter(p => p.tenantId === id).sort((a,b) => b.date > a.date ? 1 : -1);
+
+  let html = `<div class="modal-handle"></div>
+  <div class="tenant-header" style="margin-bottom:16px">
+    <div class="tenant-avatar" style="width:52px;height:52px;font-size:20px">${initials(tenant.name)}</div>
+    <div>
+      <div style="font-size:20px;font-weight:800;font-family:'Syne',sans-serif">${tenant.name}</div>
+      <div style="font-size:13px;color:var(--text2)">Room ${tenant.room} • ${tenant.phone || 'No phone'}</div>
+    </div>
+  </div>
+
+  <div class="section-title" style="font-size:15px">📅 ${monthName(cm)}</div>
+
+  <div class="card" style="padding:14px;margin-bottom:12px">
+    <div class="amount-row"><span class="amount-label">Base Rent</span><span class="amount-val">${fmt(due.rentAmt)}</span></div>
+    ${due.elecDetails ? `
+    <div class="amount-row">
+      <span class="amount-label">⚡ Electricity<br><span style="font-size:11px;color:var(--text3)">${due.elecDetails.prev} → ${due.elecDetails.curr} = ${due.elecDetails.units} units × ${fmt(due.elecDetails.rate)}</span></span>
+      <span class="amount-val" style="color:var(--orange)">${fmt(due.elecDetails.amount)}</span>
+    </div>` : tenant.electricityEnabled ? `
+    <div class="amount-row"><span class="amount-label" style="color:var(--text3)">⚡ Electricity</span><span class="amount-val" style="color:var(--text3)">No reading</span></div>` : ''}
+    <div class="divider"></div>
+    <div class="amount-row"><span class="amount-label" style="font-weight:700">Total Due</span><span class="amount-val" style="font-size:16px">${fmt(due.totalDue)}</span></div>
+    <div class="amount-row"><span class="amount-label" style="color:var(--green)">Paid This Month</span><span class="amount-val" style="color:var(--green)">${fmt(paid)}</span></div>
+  </div>
+
+  ${remaining > 0 ? `
+  <div class="balance-box">
+    <div class="balance-label">⚡ BAKI BACHA (${monthName(cm)})</div>
+    <div class="balance-amount">${fmt(remaining)}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">${fmt(paid)} paid of ${fmt(due.totalDue)}</div>
+  </div>` : paid >= due.totalDue && due.totalDue > 0 ? `
+  <div class="alert alert-success">✅ ${monthName(cm)} ka payment complete hai!</div>` : ''}
+
+  ${isAdvance ? `
+  <div class="advance-box">
+    <div class="advance-label">🟢 ADVANCE (Extra Paid)</div>
+    <div class="advance-amount">${fmt(balance)}</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px">Agle month adjust hoga</div>
+  </div>` : isOwe ? `
+  <div class="balance-box">
+    <div class="balance-label">❌ TOTAL BAAKI (All Months)</div>
+    <div class="balance-amount">${fmt(Math.abs(balance))}</div>
+  </div>` : ''}
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+    <button class="btn btn-primary" onclick="closeModal();showPayModal('${id}')">💰 Payment</button>
+    <button class="btn btn-whatsapp" onclick="sendWhatsApp('${id}','${cm}')">📱 WhatsApp</button>
+    ${tenant.electricityEnabled ? `<button class="btn btn-ghost" onclick="closeModal();showAddReadingModal('${id}')">⚡ Reading</button>` : '<div></div>'}
+    <button class="btn btn-ghost" onclick="closeModal();editTenant('${id}')">✏️ Edit</button>
+  </div>
+
+  ${allPayments.length > 0 ? `
+  <div class="section-title" style="font-size:15px">💳 Payment History</div>
+  ${allPayments.slice(0,10).map(p => {
+    const due2 = calcDue(tenant, p.month, d);
+    const allForMonth = (d.payments||[]).filter(x => x.tenantId === id && x.month === p.month);
+    const totalForMonth = allForMonth.reduce((s,x) => s+x.amount, 0);
+    const bal = totalForMonth - due2.totalDue;
+    return `
+    <div class="payment-item">
+      <div class="payment-left">
+        <div class="payment-month">${monthName(p.month)}</div>
+        <div class="payment-date">${fmtDate(p.date)} ${p.note ? '• '+p.note : ''}</div>
+        ${bal < 0 ? `<div style="font-size:11px;color:var(--red);margin-top:2px">Baki: ${fmt(Math.abs(bal))}</div>` : ''}
+        ${bal > 0 ? `<div style="font-size:11px;color:var(--green);margin-top:2px">Advance: ${fmt(bal)}</div>` : ''}
+      </div>
+      <div class="payment-right">
+        <div class="payment-amount">${fmt(p.amount)}</div>
+        <div style="font-size:11px;color:var(--text3)">${p.type === 'partial' ? '⚡ Partial' : p.type === 'advance' ? '⬆️ Advance' : '✓ Full'}</div>
+      </div>
+    </div>`;
+  }).join('')}` : ''}
+
+  <button class="btn btn-ghost btn-block" style="margin-top:16px;color:var(--red)" onclick="confirmDeleteTenant('${id}')">🗑️ Remove Tenant</button>
+  `;
+
+  openModal(html);
+}
+
+// ===================== WHATSAPP =====================
+function sendWhatsApp(tenantId, month) {
+  const d = getData();
+  const tenant = d.tenants.find(t => t.id === tenantId);
+  if (!tenant) return;
+
+  const due = calcDue(tenant, month, d);
+  const paid = getMonthPaid(tenantId, month, d);
+  const remaining = Math.max(0, due.totalDue - paid);
+  const balance = getBalance(tenantId, d);
+
+  let msg = `🏠 *Rent Reminder*\n\nNamaste ${tenant.name} ji,\n\n`;
+  msg += `📅 *Month:* ${monthName(month)}\n`;
+  msg += `🏠 *Room:* ${tenant.room}\n\n`;
+  msg += `💰 *Base Rent:* ₹${due.rentAmt.toLocaleString('en-IN')}\n`;
+
+  if (due.elecDetails) {
+    msg += `⚡ *Electricity:* ${due.elecDetails.prev}→${due.elecDetails.curr} = ${due.elecDetails.units} units × ₹${due.elecDetails.rate} = ₹${due.elecDetails.amount.toLocaleString('en-IN')}\n`;
+  }
+
+  msg += `\n📊 *Total Due:* ₹${due.totalDue.toLocaleString('en-IN')}\n`;
+
+  if (paid > 0) {
+    msg += `✅ *Paid:* ₹${paid.toLocaleString('en-IN')}\n`;
+  }
+
+  if (remaining > 0) {
+    msg += `\n🔴 *BAKI BACHA: ₹${remaining.toLocaleString('en-IN')}*\n`;
+    msg += `Jald se jald payment kar dein.\n`;
+  } else if (balance > 0) {
+    msg += `\n🟢 *Advance: ₹${balance.toLocaleString('en-IN')}* (agle month adjust hoga)\n`;
+  } else {
+    msg += `\n✅ *Payment complete hai. Shukriya!*\n`;
+  }
+
+  msg += `\nThank you! 🙏`;
+
+  const phone = (tenant.phone || '').replace(/\D/g, '');
+  const url = `https://wa.me/${phone ? '91'+phone : ''}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+// ===================== PAY MODAL =====================
+function showPayModal(tenantId) {
+  const d = getData();
+  const tenant = d.tenants.find(t => t.id === tenantId);
+  if (!tenant) return;
+  const cm = currentMonth();
+  const due = calcDue(tenant, cm, d);
+  const paid = getMonthPaid(tenantId, cm, d);
+  const remaining = Math.max(0, due.totalDue - paid);
+
+  const html = `<div class="modal-handle"></div>
+  <div class="modal-title">💰 Record Payment</div>
+  <div style="margin-bottom:16px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm)">
+    <div style="font-weight:700;margin-bottom:4px">${tenant.name}</div>
+    <div style="font-size:12px;color:var(--text2)">Total Due: ${fmt(due.totalDue)} | Paid: ${fmt(paid)} | Baki: ${fmt(remaining)}</div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Month</label>
+    <select class="form-select" id="pay-month">
+      ${getLast6Months().map(m => `<option value="${m}" ${m===cm?'selected':''}>${monthName(m)}</option>`).join('')}
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Amount</label>
+    <input class="form-input" type="number" id="pay-amount" placeholder="Enter amount" value="${remaining || due.totalDue}">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Payment Date</label>
+    <input class="form-input" type="date" id="pay-date" value="${new Date().toISOString().split('T')[0]}">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Note (optional)</label>
+    <input class="form-input" type="text" id="pay-note" placeholder="e.g. Cash, UPI, partial">
+  </div>
+  <button class="btn btn-green btn-block" onclick="savePayment('${tenantId}')">✅ Save Payment</button>
+  <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>`;
+  openModal(html);
+}
+
+function quickPay(tenantId) { showPayModal(tenantId); }
+
+function savePayment(tenantId) {
+  const amount = parseFloat(document.getElementById('pay-amount').value);
+  const month = document.getElementById('pay-month').value;
+  const date = document.getElementById('pay-date').value;
+  const note = document.getElementById('pay-note').value;
+
+  if (!amount || amount <= 0) { showToast('❌ Valid amount daalo'); return; }
+
+  const d = getData();
+  const tenant = d.tenants.find(t => t.id === tenantId);
+  const due = calcDue(tenant, month, d);
+  const prevPaid = getMonthPaid(tenantId, month, d);
+  const totalAfter = prevPaid + amount;
+
+  let type = 'full';
+  if (totalAfter < due.totalDue) type = 'partial';
+  else if (totalAfter > due.totalDue) type = 'advance';
+
+  d.payments.push({
+    id: 'pay_'+Date.now(),
+    tenantId, month, amount, date: date || new Date().toISOString().split('T')[0],
+    note, type
+  });
+  saveData(d);
+  closeModal();
+
+  const remaining = Math.max(0, due.totalDue - totalAfter);
+  if (type === 'partial') {
+    showToast(`✅ ${fmt(amount)} saved. Baki: ${fmt(remaining)}`);
+  } else if (type === 'advance') {
+    showToast(`✅ ${fmt(amount)} saved. Advance: ${fmt(totalAfter - due.totalDue)}`);
+  } else {
+    showToast(`✅ Full payment recorded!`);
+  }
+  renderPage(currentPage);
+}
+
+function getLast6Months() {
+  const months = [];
+  const now = new Date();
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+  }
+  return months;
+}
+
+// ===================== ADD TENANT =====================
+function showAddTenantModal(editId) {
+  const d = getData();
+  const e = editId ? d.tenants.find(t => t.id === editId) : null;
+  const isEdit = !!e;
+
+  const html = `<div class="modal-handle"></div>
+  <div class="modal-title">${isEdit ? '✏️ Edit Tenant' : '👤 Add Tenant'}</div>
+  <div class="form-group">
+    <label class="form-label">Name *</label>
+    <input class="form-input" id="t-name" placeholder="Tenant ka naam" value="${e ? e.name : ''}">
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Room *</label>
+      <input class="form-input" id="t-room" placeholder="101" value="${e ? e.room : ''}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phone</label>
+      <input class="form-input" id="t-phone" type="tel" placeholder="9999999999" value="${e ? (e.phone||'') : ''}">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Monthly Rent *</label>
+      <input class="form-input" id="t-rent" type="number" placeholder="5000" value="${e ? e.rentAmount : ''}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Join Date</label>
+      <input class="form-input" id="t-join" type="date" value="${e ? (e.joinDate||'') : new Date().toISOString().split('T')[0]}">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">
+      <input type="checkbox" id="t-elec" style="margin-right:8px" ${e && e.electricityEnabled ? 'checked' : ''} onchange="toggleElecForm()">
+      ⚡ Electricity Billing Enable
+    </label>
+  </div>
+  <div id="elec-form" style="display:${e && e.electricityEnabled ? 'block' : 'none'}">
+    <div class="alert alert-info">
+      💡 Join karte waqt jitni reading hai woh "Join Reading" mein daalo. Yahi base reading hogi. Phir har mahine prev→curr daalna hoga.
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Rate per Unit (₹)</label>
+        <input class="form-input" id="t-rate" type="number" placeholder="8" value="${e ? (e.rentPerUnit || d.settings.rentPerUnit || 8) : (d.settings.rentPerUnit || 8)}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Join Reading (base)</label>
+        <input class="form-input" id="t-joinreading" type="number" placeholder="0" value="${e ? (e.joinReading || 0) : 0}">
+      </div>
+    </div>
+  </div>
+  <button class="btn btn-primary btn-block" onclick="saveTenant('${editId||''}')">${isEdit ? '💾 Update' : '➕ Add Tenant'}</button>
+  <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>`;
+  openModal(html);
+}
+
+function toggleElecForm() {
+  const show = document.getElementById('t-elec').checked;
+  document.getElementById('elec-form').style.display = show ? 'block' : 'none';
+}
+
+function editTenant(id) { showAddTenantModal(id); }
+
+function saveTenant(editId) {
+  const name = document.getElementById('t-name').value.trim();
+  const room = document.getElementById('t-room').value.trim();
+  const phone = document.getElementById('t-phone').value.trim();
+  const rentAmount = parseFloat(document.getElementById('t-rent').value);
+  const joinDate = document.getElementById('t-join').value;
+  const electricityEnabled = document.getElementById('t-elec').checked;
+  const rentPerUnit = electricityEnabled ? parseFloat(document.getElementById('t-rate').value || 8) : 8;
+  const joinReading = electricityEnabled ? parseFloat(document.getElementById('t-joinreading').value || 0) : 0;
+
+  if (!name || !room || !rentAmount) { showToast('❌ Name, room aur rent zaroori hai'); return; }
+
+  const d = getData();
+
+  if (editId) {
+    const idx = d.tenants.findIndex(t => t.id === editId);
+    if (idx >= 0) {
+      d.tenants[idx] = { ...d.tenants[idx], name, room, phone, rentAmount, joinDate, electricityEnabled, rentPerUnit, joinReading };
+    }
+  } else {
+    d.tenants.push({
+      id: 'ten_'+Date.now(),
+      name, room, phone, rentAmount, joinDate, electricityEnabled, rentPerUnit, joinReading,
+      readings: [], active: true
+    });
+  }
+
+  saveData(d);
+  closeModal();
+  showToast(editId ? '✅ Tenant updated!' : '✅ Tenant added!');
+  renderPage(currentPage);
+}
+
+function confirmDeleteTenant(id) {
+  const d = getData();
+  const t = d.tenants.find(x => x.id === id);
+  if (!t) return;
+  if (!confirm(`Remove ${t.name}?`)) return;
+  d.tenants = d.tenants.filter(x => x.id !== id);
+  d.payments = d.payments.filter(p => p.tenantId !== id);
+  saveData(d);
+  closeModal();
+  showToast('🗑️ Tenant removed');
+  renderPage(currentPage);
+}
+
+// ===================== ELECTRICITY READING =====================
+// CORRECT LOGIC:
+// - Join reading = base reading (set when tenant joins)
+// - First month: prev = joinReading, curr = new reading
+// - Subsequent months: prev = last month's curr reading
+// - Units used = curr - prev
+
+function showAddReadingModal(tenantId) {
+  const d = getData();
+  const tenant = d.tenants.find(t => t.id === tenantId);
+  if (!tenant) return;
+  const cm = currentMonth();
+  const readings = tenant.readings || [];
+
+  // Find previous reading (last month or join reading)
+  const prevMonthReading = getPrevReading(tenant, cm, readings);
+  const existingReading = readings.find(r => r.month === cm);
+
+  const html = `<div class="modal-handle"></div>
+  <div class="modal-title">⚡ Electricity Reading</div>
+  <div class="unit-info">
+    <div class="unit-info-row"><span>Tenant</span><span>${tenant.name}</span></div>
+    <div class="unit-info-row"><span>Month</span><span>${monthName(cm)}</span></div>
+    <div class="unit-info-row"><span>Rate per Unit</span><span>₹${tenant.rentPerUnit || d.settings.rentPerUnit}</span></div>
+    <div class="unit-info-row" style="color:var(--orange)"><span>Previous Reading</span><span>${prevMonthReading}</span></div>
+  </div>
+  <div class="alert alert-info">
+    ℹ️ Previous reading auto-fill ho gayi hai. Sirf current month ki <b>nai reading</b> daalo.
+  </div>
+  <div class="form-group">
+    <label class="form-label">Month</label>
+    <select class="form-select" id="r-month" onchange="updatePrevReading('${tenantId}')">
+      ${getLast6Months().map(m => `<option value="${m}" ${m===cm?'selected':''}>${monthName(m)}</option>`).join('')}
+    </select>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Previous Reading</label>
+      <input class="form-input" id="r-prev" type="number" value="${existingReading ? existingReading.prevReading : prevMonthReading}" readonly style="opacity:0.7">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Current Reading *</label>
+      <input class="form-input" id="r-curr" type="number" placeholder="Current meter" value="${existingReading ? existingReading.currReading : ''}" oninput="calcUnitsPreview()">
+    </div>
+  </div>
+  <div id="units-preview" style="display:none;margin-bottom:16px" class="alert alert-success"></div>
+  <button class="btn btn-orange btn-block" onclick="saveReading('${tenantId}')">💾 Save Reading</button>
+  <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>`;
+  openModal(html);
+}
+
+function getPrevReading(tenant, forMonth, readings) {
+  // Sort readings by month descending
+  const sorted = [...readings].sort((a,b) => b.month > a.month ? 1 : -1);
+  // Find the most recent reading BEFORE forMonth
+  const prev = sorted.find(r => r.month < forMonth);
+  if (prev) return prev.currReading; // last month's current = this month's previous
+  return tenant.joinReading || 0; // fallback to join reading
+}
+
+function updatePrevReading(tenantId) {
+  const d = getData();
+  const tenant = d.tenants.find(t => t.id === tenantId);
+  const month = document.getElementById('r-month').value;
+  const readings = tenant.readings || [];
+  const prevReading = getPrevReading(tenant, month, readings);
+  const existingReading = readings.find(r => r.month === month);
+  document.getElementById('r-prev').value = existingReading ? existingReading.prevReading : prevReading;
+  document.getElementById('r-curr').value = existingReading ? existingReading.currReading : '';
+  calcUnitsPreview();
+}
+
+function calcUnitsPreview() {
+  const d = getData();
+  const prev = parseFloat(document.getElementById('r-prev').value || 0);
+  const curr = parseFloat(document.getElementById('r-curr').value || 0);
+  const preview = document.getElementById('units-preview');
+  if (curr > prev) {
+    const units = curr - prev;
+    // get tenant id from modal context - just show preview
+    preview.style.display = 'block';
+    preview.innerHTML = `⚡ Units Used: <b>${units}</b> (${curr} - ${prev})`;
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+function saveReading(tenantId) {
+  const month = document.getElementById('r-month').value;
+  const prev = parseFloat(document.getElementById('r-prev').value);
+  const curr = parseFloat(document.getElementById('r-curr').value);
+
+  if (isNaN(curr)) { showToast('❌ Current reading daalo'); return; }
+  if (curr < prev) { showToast('❌ Current reading previous se kam nahi ho sakti'); return; }
+
+  const d = getData();
+  const tenant = d.tenants.find(t => t.id === tenantId);
+  if (!tenant.readings) tenant.readings = [];
+
+  // Remove existing for this month
+  tenant.readings = tenant.readings.filter(r => r.month !== month);
+  tenant.readings.push({ month, prevReading: prev, currReading: curr });
+  saveData(d);
+  closeModal();
+
+  const units = curr - prev;
+  const rate = tenant.rentPerUnit || d.settings.rentPerUnit;
+  showToast(`✅ ${units} units saved = ${fmt(units * rate)}`);
+  renderPage(currentPage);
+}
+
+// ===================== PAYMENTS PAGE =====================
+function renderPayments() {
+  const d = getData();
+  const cm = currentMonth();
+
+  let html = `<div class="section-title">Payments</div>`;
+
+  const months = getLast6Months();
+  html += `<div class="month-tabs">`;
+  months.forEach(m => html += `<div class="month-tab ${m===cm?'active':''}" onclick="filterPaymentsByMonth('${m}')">${monthName(m)}</div>`);
+  html += `</div>`;
+  html += `<div id="payment-month-content"></div>`;
+
+  document.getElementById('payments-content').innerHTML = html;
+  filterPaymentsByMonth(cm);
+}
+
+function filterPaymentsByMonth(month) {
+  document.querySelectorAll('.month-tab').forEach(t => {
+    t.classList.toggle('active', t.textContent === monthName(month));
+  });
+
+  const d = getData();
+  const tenants = d.tenants;
+  let html = '';
+
+  tenants.forEach(tenant => {
+    const due = calcDue(tenant, month, d);
+    const paid = getMonthPaid(tenant.id, month, d);
+    const remaining = Math.max(0, due.totalDue - paid);
+    const totalAfterPaid = paid;
+    const balance = getBalance(tenant.id, d);
+    const isAdvance = totalAfterPaid > due.totalDue;
+
+    let statusColor = 'var(--text3)';
+    let statusText = 'No Due';
+    if (due.totalDue > 0) {
+      if (paid >= due.totalDue) { statusColor = 'var(--green)'; statusText = '✓ Paid'; }
+      else if (paid > 0) { statusColor = 'var(--orange)'; statusText = 'Partial'; }
+      else { statusColor = 'var(--red)'; statusText = 'Pending'; }
+    }
+
+    html += `
+    <div class="card" style="margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div class="tenant-avatar" style="width:38px;height:38px;font-size:14px">${initials(tenant.name)}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:14px">${tenant.name}</div>
+          <div style="font-size:11px;color:var(--text2)">Room ${tenant.room}</div>
+        </div>
+        <span style="color:${statusColor};font-size:12px;font-weight:600">${statusText}</span>
+      </div>
+      <div class="amount-row"><span class="amount-label">Total Due</span><span class="amount-val">${fmt(due.totalDue)}</span></div>
+      <div class="amount-row"><span class="amount-label">Paid</span><span class="amount-val" style="color:var(--green)">${fmt(paid)}</span></div>
+      ${remaining > 0 ? `<div class="amount-row" style="background:rgba(239,68,68,0.07);border-radius:8px;padding:8px;margin-top:4px"><span class="amount-label" style="color:var(--red);font-weight:600">Baki Bacha</span><span class="amount-val" style="color:var(--red);font-size:15px">${fmt(remaining)}</span></div>` : ''}
+      ${balance > 0 && due.totalDue > 0 && paid >= due.totalDue ? `<div class="amount-row" style="background:rgba(16,185,129,0.07);border-radius:8px;padding:8px;margin-top:4px"><span class="amount-label" style="color:var(--green)">Advance (Overall)</span><span class="amount-val" style="color:var(--green)">${fmt(balance)}</span></div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="showPayModal('${tenant.id}')">💰 Pay</button>
+        ${(remaining > 0 || paid === 0) ? `<button class="btn btn-whatsapp btn-sm" onclick="sendWhatsApp('${tenant.id}','${month}')">📱 WA</button>` : ''}
+      </div>
+    </div>`;
+  });
+
+  if (html === '') html = `<div class="empty-state"><div class="empty-icon">💳</div><p>No tenants found</p></div>`;
+  document.getElementById('payment-month-content').innerHTML = html;
+}
+
+// ===================== EXPENSES PAGE =====================
+function renderExpenses() {
+  const d = getData();
+  const expenses = (d.expenses || []).sort((a,b) => b.date > a.date ? 1 : -1);
+  const total = expenses.reduce((s,e) => s+e.amount, 0);
+
+  let html = `
+  <div class="section-title">Expenses</div>
+  <div class="stat-box" style="margin-bottom:16px">
+    <div class="stat-label">Total Expenses</div>
+    <div class="stat-value red">${fmt(total)}</div>
+  </div>`;
+
+  if (expenses.length === 0) {
+    html += `<div class="empty-state"><div class="empty-icon">📋</div><p>No expenses yet.<br>Tap ＋ to add.</p></div>`;
+  } else {
+    expenses.forEach(exp => {
+      html += `
+      <div class="card" style="padding:14px;margin-bottom:10px">
+        <div class="expense-item" style="border:none;padding:0">
+          <div>
+            <div style="font-weight:600;font-size:14px">${exp.title}</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">${fmtDate(exp.date)} ${exp.category ? '• '+exp.category : ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="color:var(--red);font-weight:700;font-size:15px">${fmt(exp.amount)}</span>
+            <button class="icon-btn" style="width:30px;height:30px" onclick="deleteExpense('${exp.id}')">🗑️</button>
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+
+  document.getElementById('expenses-content').innerHTML = html;
+}
+
+function showAddExpenseModal() {
+  const html = `<div class="modal-handle"></div>
+  <div class="modal-title">📋 Add Expense</div>
+  <div class="form-group">
+    <label class="form-label">Title *</label>
+    <input class="form-input" id="exp-title" placeholder="e.g. Plumbing repair">
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Amount *</label>
+      <input class="form-input" type="number" id="exp-amount" placeholder="500">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date</label>
+      <input class="form-input" type="date" id="exp-date" value="${new Date().toISOString().split('T')[0]}">
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Category</label>
+    <select class="form-select" id="exp-cat">
+      <option value="">Select</option>
+      <option>Maintenance</option>
+      <option>Utilities</option>
+      <option>Repairs</option>
+      <option>Cleaning</option>
+      <option>Other</option>
+    </select>
+  </div>
+  <button class="btn btn-primary btn-block" onclick="saveExpense()">➕ Add Expense</button>
+  <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>`;
+  openModal(html);
+}
+
+function saveExpense() {
+  const title = document.getElementById('exp-title').value.trim();
+  const amount = parseFloat(document.getElementById('exp-amount').value);
+  const date = document.getElementById('exp-date').value;
+  const category = document.getElementById('exp-cat').value;
+
+  if (!title || !amount) { showToast('❌ Title aur amount daalo'); return; }
+  const d = getData();
+  if (!d.expenses) d.expenses = [];
+  d.expenses.push({ id: 'exp_'+Date.now(), title, amount, date, category });
+  saveData(d);
+  closeModal();
+  showToast('✅ Expense added!');
+  renderPage(currentPage);
+}
+
+function deleteExpense(id) {
+  if (!confirm('Delete this expense?')) return;
+  const d = getData();
+  d.expenses = (d.expenses||[]).filter(e => e.id !== id);
+  saveData(d);
+  renderExpenses();
+  showToast('🗑️ Deleted');
+}
+
+// ===================== TENANTS PAGE =====================
+function renderTenants() {
+  const d = getData();
+  const tenants = d.tenants;
+
+  let html = `<div class="section-title">All Tenants</div>`;
+
+  if (tenants.length === 0) {
+    html += `<div class="empty-state"><div class="empty-icon">👥</div><p>No tenants yet.<br>Tap ＋ to add first tenant.</p></div>`;
+  } else {
+    tenants.forEach(t => {
+      html += `
+      <div class="tenant-card" onclick="showTenantDetail('${t.id}')">
+        <div class="tenant-header">
+          <div class="tenant-avatar">${initials(t.name)}</div>
+          <div style="flex:1">
+            <div class="tenant-name">${t.name}</div>
+            <div class="tenant-room">Room ${t.room} • ${t.phone || 'No phone'}</div>
+          </div>
+          <div style="text-align:right;font-size:12px;color:var(--text2)">${fmt(t.rentAmount)}<br><span style="color:var(--text3)">per month</span></div>
+        </div>
+        <div class="tenant-meta">
+          ${t.electricityEnabled ? '<span class="badge badge-blue">⚡ Electricity</span>' : ''}
+          <span class="badge badge-purple">Since ${fmtDate(t.joinDate)}</span>
+          <span class="badge badge-green">Room ${t.room}</span>
+        </div>
+      </div>`;
+    });
+  }
+
+  document.getElementById('tenants-content').innerHTML = html;
+}
+
+// ===================== SEARCH =====================
+function showSearch() {
+  const d = getData();
+  const html = `<div class="modal-handle"></div>
+  <div class="modal-title">🔍 Search Tenant</div>
+  <input class="form-input" id="search-input" placeholder="Name ya room number..." oninput="doSearch()" autofocus style="margin-bottom:16px">
+  <div id="search-results"></div>`;
+  openModal(html);
+  setTimeout(() => document.getElementById('search-input')?.focus(), 300);
+}
+
+function doSearch() {
+  const q = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const d = getData();
+  const results = d.tenants.filter(t =>
+    t.name.toLowerCase().includes(q) || (t.room+'').includes(q) || (t.phone||'').includes(q)
+  );
+  let html = '';
+  results.forEach(t => {
+    html += `<div class="card" style="cursor:pointer;padding:14px" onclick="closeModal();showTenantDetail('${t.id}')">
+      <div style="font-weight:700">${t.name}</div>
+      <div style="font-size:12px;color:var(--text2)">Room ${t.room} • ${t.phone||'No phone'} • ${fmt(t.rentAmount)}/month</div>
+    </div>`;
+  });
+  document.getElementById('search-results').innerHTML = html || `<div style="text-align:center;color:var(--text3);padding:20px">No results</div>`;
+}
+
+// ===================== EXPORT =====================
+function exportData() {
+  const d = getData();
+  const json = JSON.stringify(d, null, 2);
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `rentbook_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  showToast('📤 Data exported!');
+}
+
+// ===================== SETTINGS =====================
+function showSettings() {
+  const d = getData();
+  const s = d.settings;
+  const html = `<div class="modal-handle"></div>
+  <div class="modal-title">⚙️ Settings</div>
+  <div class="form-group">
+    <label class="form-label">Property Name</label>
+    <input class="form-input" id="s-name" value="${s.propertyName||'My Property'}">
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">Currency Symbol</label>
+      <input class="form-input" id="s-cur" value="${s.currency||'₹'}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Default Rate/Unit</label>
+      <input class="form-input" type="number" id="s-rate" value="${s.rentPerUnit||8}">
+    </div>
+  </div>
+  <button class="btn btn-primary btn-block" onclick="saveSettings()">💾 Save</button>
+  <div class="divider"></div>
+  <button class="btn btn-ghost btn-block" onclick="importData()">📥 Import Data</button>
+  <button class="btn btn-ghost btn-block" style="color:var(--red)" onclick="clearAllData()">🗑️ Clear All Data</button>`;
+  openModal(html);
+}
+
+function saveSettings() {
+  const d = getData();
+  d.settings = {
+    propertyName: document.getElementById('s-name').value,
+    currency: document.getElementById('s-cur').value,
+    rentPerUnit: parseFloat(document.getElementById('s-rate').value || 8)
+  };
+  saveData(d);
+  closeModal();
+  showToast('✅ Settings saved!');
+  renderPage(currentPage);
+}
+
+function clearAllData() {
+  if (!confirm('⚠️ Sab data delete ho jayega! Sure?')) return;
+  if (!confirm('Pakka sure ho? Yeh undo nahi hoga!')) return;
+  localStorage.removeItem('rb_data');
+  showToast('🗑️ All data cleared');
+  renderPage(currentPage);
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        saveData(data);
+        closeModal();
+        showToast('✅ Data imported!');
+        renderPage(currentPage);
+      } catch(err) {
+        showToast('❌ Invalid file');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function showAddPaymentModal() {
+  const d = getData();
+  if (d.tenants.length === 0) { showToast('Pehle tenant add karo'); return; }
+  const html = `<div class="modal-handle"></div>
+  <div class="modal-title">💰 Record Payment</div>
+  <div class="form-group">
+    <label class="form-label">Tenant *</label>
+    <select class="form-select" id="pay-tenant" onchange="updatePayDue()">
+      ${d.tenants.map(t => `<option value="${t.id}">${t.name} (Room ${t.room})</option>`).join('')}
+    </select>
+  </div>
+  <div id="pay-due-info" style="margin-bottom:12px"></div>
+  <div class="form-group">
+    <label class="form-label">Month</label>
+    <select class="form-select" id="pay-month2">
+      ${getLast6Months().map(m => `<option value="${m}" ${m===currentMonth()?'selected':''}>${monthName(m)}</option>`).join('')}
+    </select>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Amount</label>
+    <input class="form-input" type="number" id="pay-amount2" placeholder="Amount">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Date</label>
+    <input class="form-input" type="date" id="pay-date2" value="${new Date().toISOString().split('T')[0]}">
+  </div>
+  <div class="form-group">
+    <label class="form-label">Note</label>
+    <input class="form-input" id="pay-note2" placeholder="Optional">
+  </div>
+  <button class="btn btn-green btn-block" onclick="savePayment2()">✅ Save</button>
+  <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>`;
+  openModal(html);
+  setTimeout(updatePayDue, 100);
+}
+
+function updatePayDue() {
+  const tenantId = document.getElementById('pay-tenant')?.value;
+  const month = document.getElementById('pay-month2')?.value || currentMonth();
+  if (!tenantId) return;
+  const d = getData();
+  const tenant = d.tenants.find(t => t.id === tenantId);
+  if (!tenant) return;
+  const due = calcDue(tenant, month, d);
+  const paid = getMonthPaid(tenantId, month, d);
+  const remaining = Math.max(0, due.totalDue - paid);
+  const el = document.getElementById('pay-due-info');
+  if (el) {
+    el.innerHTML = `<div class="unit-info">
+      <div class="unit-info-row"><span>Total Due</span><span>${fmt(due.totalDue)}</span></div>
+      <div class="unit-info-row"><span>Already Paid</span><span style="color:var(--green)">${fmt(paid)}</span></div>
+      <div class="unit-info-row"><span style="color:var(--red);font-weight:700">Baki Bacha</span><span style="color:var(--red);font-weight:700">${fmt(remaining)}</span></div>
+    </div>`;
+    const amtInput = document.getElementById('pay-amount2');
+    if (amtInput && !amtInput.value) amtInput.value = remaining || due.totalDue;
+  }
+}
+
+function savePayment2() {
+  const tenantId = document.getElementById('pay-tenant').value;
+  const month = document.getElementById('pay-month2').value;
+  const amount = parseFloat(document.getElementById('pay-amount2').value);
+  const date = document.getElementById('pay-date2').value;
+  const note = document.getElementById('pay-note2').value;
+
+  if (!amount || amount <= 0) { showToast('❌ Amount daalo'); return; }
+
+  const d = getData();
+  const tenant = d.tenants.find(t => t.id === tenantId);
+  const due = calcDue(tenant, month, d);
+  const prevPaid = getMonthPaid(tenantId, month, d);
+  const totalAfter = prevPaid + amount;
+
+  let type = 'full';
+  if (totalAfter < due.totalDue) type = 'partial';
+  else if (totalAfter > due.totalDue) type = 'advance';
+
+  d.payments.push({ id: 'pay_'+Date.now(), tenantId, month, amount, date, note, type });
+  saveData(d);
+  closeModal();
+
+  const remaining = Math.max(0, due.totalDue - totalAfter);
+  if (type === 'partial') showToast(`✅ ${fmt(amount)} saved. Baki: ${fmt(remaining)}`);
+  else if (type === 'advance') showToast(`✅ Paid! Advance: ${fmt(totalAfter - due.totalDue)}`);
+  else showToast('✅ Full payment done!');
+  renderPage(currentPage);
+}
+
+// ===================== INIT =====================
+// Topbar settings button
+document.querySelector('.icon-btn[onclick="exportData()"]').insertAdjacentHTML('beforebegin',
+  '<button class="icon-btn" onclick="showSettings()" title="Settings">⚙️</button>');
+
+renderOverview();
+</script>
+</body>
+</html>
