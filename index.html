@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="RentBook"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#6c5ce7"/>
+<title>RentBook Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:#0e0e14;font-family:'Outfit','Segoe UI',sans-serif;color:#e8e8f0;}
+  input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:#1a1a2e;}
+  ::-webkit-scrollbar-thumb{background:#2a2a3e;border-radius:4px;}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const today = new Date();
+const fmt = (d) => { const dt=new Date(d); return `${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}`; };
+const monthKey = (y,m) => `${y}-${String(m+1).padStart(2,"0")}`;
+
+function calcStatus(paid,total){
+  if(paid<=0) return "Pending";
+  if(paid>=total) return paid>total?"Advance":"Paid";
+  return "Partial";
+}
+
+const STATUS_COLOR = { Paid:"#00c896", Partial:"#f5a623", Pending:"#ff5e5e", Advance:"#7b68ee" };
+const COLORS = ["#7b68ee","#00c896","#f5a623","#ff5e5e","#4ecdc4","#45b7d1","#96ceb4"];
+const avatarColor = (id) => COLORS[id % COLORS.length];
+
+const INIT_TENANTS = [
+  {id:1,name:"Rahul Sharma",room:"101",rent:8000,phone:"9876543210",joinDate:"2024-01-01"},
+  {id:2,name:"Priya Singh",room:"102",rent:7500,phone:"9812345678",joinDate:"2024-03-01"},
+  {id:3,name:"Amit Kumar",room:"201",rent:9000,phone:"9900112233",joinDate:"2023-11-01"},
+];
+
+function buildEmptyMonth(tenant,yk,prevReading=0){
+  return { tenantId:tenant.id,monthKey:yk,rent:tenant.rent,
+    elecPrevReading:prevReading,elecCurrReading:prevReading,
+    elecUnits:0,elecBill:0,totalPayable:tenant.rent,
+    amountPaid:0,status:"Pending",carryForward:0,advance:0,paymentDates:[] };
+}
+
+let _tenants = JSON.parse(JSON.stringify(INIT_TENANTS));
+let _records = {};
+let _settings = {rate:8};
+let _nextId = 4;
+
+function getRecord(tid,yk){ return _records[`${tid}_${yk}`]||null; }
+function saveRecord(rec){ _records[`${rec.tenantId}_${rec.monthKey}`]=rec; }
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+const S = {
+  app:{fontFamily:"'Outfit','Segoe UI',sans-serif",background:"#0e0e14",minHeight:"100vh",color:"#e8e8f0",paddingBottom:70},
+  header:{background:"linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)",borderBottom:"1px solid #2a2a3e",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100},
+  logo:{display:"flex",alignItems:"center",gap:8},
+  logoText:{fontWeight:800,fontSize:18,background:"linear-gradient(135deg,#7b68ee,#00c896)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"},
+  logoBadge:{background:"#7b68ee22",color:"#7b68ee",fontSize:10,padding:"2px 6px",borderRadius:4,fontWeight:700},
+  nav:{display:"flex",gap:2},
+  navBtn:{background:"none",border:"none",color:"#888",cursor:"pointer",padding:"6px 7px",borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",gap:2,fontSize:15},
+  navBtnActive:{background:"#7b68ee22",color:"#7b68ee"},
+  navLabel:{fontSize:9,fontWeight:600},
+  monthBar:{display:"flex",alignItems:"center",justifyContent:"center",gap:20,padding:"10px 0",background:"#12121c"},
+  monthBtn:{background:"#2a2a3e",border:"none",color:"#ccc",width:32,height:32,borderRadius:8,cursor:"pointer",fontSize:18,display:"flex",alignItems:"center",justifyContent:"center"},
+  monthTitle:{fontWeight:700,fontSize:16,minWidth:140,textAlign:"center"},
+  main:{padding:"14px 12px",maxWidth:600,margin:"0 auto"},
+  statsGrid:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14},
+  statCard:{background:"#1a1a2e",borderRadius:12,padding:"12px",display:"flex",flexDirection:"column",gap:4},
+  statValue:{fontWeight:800,fontSize:17},
+  statLabel:{fontSize:11,color:"#888"},
+  progressWrap:{background:"#1a1a2e",borderRadius:12,padding:14,marginBottom:14},
+  progressLabel:{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:8},
+  progressBar:{background:"#2a2a3e",borderRadius:99,height:8,overflow:"hidden"},
+  progressFill:{background:"linear-gradient(90deg,#7b68ee,#00c896)",height:"100%",borderRadius:99,transition:"width 0.5s ease"},
+  sectionTitle:{fontWeight:700,fontSize:15,marginBottom:12,color:"#c8c8e8"},
+  tenantList:{display:"flex",flexDirection:"column",gap:10},
+  tenantCard:{background:"#1a1a2e",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between"},
+  tcLeft:{display:"flex",alignItems:"center",gap:10},
+  tcAvatar:{width:40,height:40,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:16,color:"#fff",flexShrink:0},
+  tcAvatarSm:{width:30,height:30,fontSize:12,borderRadius:8},
+  tcName:{fontWeight:600,fontSize:14},
+  tcRoom:{fontSize:12,color:"#888"},
+  tcRight:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4},
+  tcAmount:{fontSize:12,color:"#aaa"},
+  statusBadge:{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:6},
+  cfTag:{fontSize:10,color:"#f5a623",background:"#f5a62322",padding:"1px 6px",borderRadius:4},
+  pageHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14},
+  addBtn:{background:"linear-gradient(135deg,#7b68ee,#5a4fcf)",border:"none",color:"#fff",padding:"8px 14px",borderRadius:10,fontWeight:700,cursor:"pointer",fontSize:13},
+  editBtn:{background:"#7b68ee22",border:"none",color:"#7b68ee",padding:"5px 9px",borderRadius:8,cursor:"pointer",fontSize:13,marginRight:4},
+  deleteBtn:{background:"#ff5e5e22",border:"none",color:"#ff5e5e",padding:"5px 9px",borderRadius:8,cursor:"pointer",fontSize:13},
+  tenantTabs:{display:"flex",gap:8,overflowX:"auto",paddingBottom:4,marginBottom:14},
+  tenantTab:{background:"#1a1a2e",border:"2px solid transparent",borderRadius:10,padding:"7px 10px",cursor:"pointer",color:"#aaa",display:"flex",flexDirection:"column",alignItems:"center",gap:3,minWidth:60,flexShrink:0},
+  tenantTabActive:{borderColor:"#7b68ee",color:"#e8e8f0"},
+  summaryCard:{background:"#1a1a2e",borderRadius:14,padding:14,marginBottom:12},
+  summaryRow:{display:"flex",justifyContent:"space-between",fontSize:14,padding:"4px 0"},
+  summaryDivider:{borderTop:"1px solid #2a2a3e",margin:"8px 0"},
+  statusBig:{color:"#fff",fontWeight:800,padding:"5px 18px",borderRadius:20,fontSize:14},
+  advanceNote:{marginTop:8,fontSize:12,color:"#7b68ee",background:"#7b68ee11",padding:"6px 10px",borderRadius:8,textAlign:"center"},
+  inputSection:{background:"#1a1a2e",borderRadius:14,padding:14,marginBottom:12},
+  inputSectionTitle:{fontWeight:700,fontSize:13,marginBottom:10,color:"#aaa"},
+  input:{background:"#12121c",border:"1px solid #2a2a3e",borderRadius:10,padding:"10px 12px",color:"#e8e8f0",fontSize:14,width:"100%",outline:"none"},
+  actionBtn:{background:"linear-gradient(135deg,#7b68ee,#5a4fcf)",border:"none",color:"#fff",padding:"11px",borderRadius:10,fontWeight:700,cursor:"pointer",fontSize:14,width:"100%",marginTop:10},
+  elecGrid:{display:"flex",alignItems:"center",gap:8,marginBottom:8},
+  elecBox:{background:"#12121c",borderRadius:10,padding:"10px 12px",flex:1,textAlign:"center"},
+  elecArrow:{color:"#7b68ee",fontSize:18,fontWeight:700},
+  elecInputWrap:{flex:1.5},
+  elecLabel:{fontSize:11,color:"#888",marginBottom:3},
+  elecVal:{fontWeight:700,fontSize:18,color:"#7b68ee"},
+  elecPreview:{fontSize:12,color:"#7b68ee",background:"#7b68ee11",padding:"6px 10px",borderRadius:8,marginBottom:4},
+  histRow:{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid #1e1e2e",fontSize:13},
+  histDate:{color:"#888"},
+  historyBlock:{background:"#1a1a2e",borderRadius:14,padding:14,marginBottom:12},
+  histTenantHeader:{display:"flex",alignItems:"center",gap:10,marginBottom:10},
+  histTable:{fontSize:13},
+  histTableHead:{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",color:"#666",fontWeight:700,fontSize:11,marginBottom:6,paddingBottom:6,borderBottom:"1px solid #2a2a3e"},
+  histTableRow:{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"4px 0",borderBottom:"1px solid #1e1e2e"},
+  select:{background:"#1a1a2e",border:"1px solid #2a2a3e",borderRadius:8,padding:"6px 10px",color:"#e8e8f0",fontSize:13},
+  overlay:{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:200},
+  modalCard:{background:"#1a1a2e",borderRadius:"20px 20px 0 0",padding:"20px 16px 36px",width:"100%",maxWidth:480,maxHeight:"90vh",overflowY:"auto"},
+  modalHeader:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16},
+  closeBtn:{background:"#2a2a3e",border:"none",color:"#ccc",width:28,height:28,borderRadius:8,cursor:"pointer",fontSize:14},
+  formLabel:{fontSize:12,color:"#888",marginBottom:4},
+  toast:{position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",color:"#fff",fontWeight:700,fontSize:13,padding:"10px 22px",borderRadius:20,zIndex:300,boxShadow:"0 4px 20px rgba(0,0,0,0.5)",whiteSpace:"nowrap"},
+  emptyState:{textAlign:"center",padding:40,color:"#555",fontSize:14},
+  infoBox:{background:"#7b68ee11",border:"1px solid #7b68ee33",borderRadius:10,padding:"10px 12px",fontSize:12,color:"#aaa",lineHeight:1.7,marginBottom:12},
+  warningBox:{background:"#f5a62311",border:"1px solid #f5a62333",borderRadius:10,padding:"10px 12px",fontSize:12,color:"#f5a623",lineHeight:1.7,marginBottom:12},
+};
+
+// ── Main App ──────────────────────────────────────────────────────────────────
+function RentBook(){
+  const [tenants,setTenants]=useState(_tenants);
+  const [settings,setSettings]=useState(_settings);
+  const [activeTab,setActiveTab]=useState("dashboard");
+  const [selectedTenant,setSelectedTenant]=useState(null);
+  const [viewMonth,setViewMonth]=useState({y:today.getFullYear(),m:today.getMonth()});
+  const [modal,setModal]=useState(null);
+  const [toast,setToast]=useState(null);
+  const [records,setRecordsState]=useState({..._records});
+
+  const showToast=(msg,type="success")=>{ setToast({msg,type}); setTimeout(()=>setToast(null),2500); };
+  const refreshRecords=()=>setRecordsState({..._records});
+
+  const ensureRecord=useCallback((tenantId,yk)=>{
+    if(getRecord(tenantId,yk)) return getRecord(tenantId,yk);
+    const tenant=_tenants.find(t=>t.id===tenantId);
+    if(!tenant) return null;
+    const [y,mo]=yk.split("-").map(Number);
+    const prevDate=new Date(y,mo-2,1);
+    const prevYk=monthKey(prevDate.getFullYear(),prevDate.getMonth());
+    const prev=getRecord(tenantId,prevYk);
+    const prevReading=prev?prev.elecCurrReading:0;
+    let carry=0;
+    if(prev){
+      if(prev.status==="Advance") carry=-(prev.advance);
+      else if(prev.status==="Partial"||prev.status==="Pending") carry=prev.totalPayable-prev.amountPaid;
+    }
+    const rec=buildEmptyMonth(tenant,yk,prevReading);
+    rec.carryForward=carry;
+    rec.totalPayable=rec.rent+rec.elecBill+carry;
+    saveRecord(rec);
+    return rec;
+  },[]);
+
+  useEffect(()=>{
+    _tenants.forEach(t=>ensureRecord(t.id,monthKey(viewMonth.y,viewMonth.m)));
+    refreshRecords();
+  },[viewMonth,tenants,ensureRecord]);
+
+  const handlePayment=(tenantId,amountPaid,yk)=>{
+    const rec=getRecord(tenantId,yk)||ensureRecord(tenantId,yk);
+    const paid=Number(amountPaid);
+    rec.amountPaid=paid;
+    if(paid===0){rec.status="Pending";rec.advance=0;}
+    else if(paid<rec.totalPayable){rec.status="Partial";rec.advance=0;}
+    else if(paid===rec.totalPayable){rec.status="Paid";rec.advance=0;}
+    else{rec.status="Advance";rec.advance=paid-rec.totalPayable;}
+    rec.paymentDates=[...rec.paymentDates,{date:new Date().toISOString(),amount:paid}];
+    saveRecord(rec); refreshRecords();
+    showToast(`Payment saved! Status: ${rec.status}`);
+  };
+
+  const handleElec=(tenantId,currReading,yk)=>{
+    const rec=getRecord(tenantId,yk)||ensureRecord(tenantId,yk);
+    const curr=Number(currReading);
+    const units=Math.max(0,curr-rec.elecPrevReading);
+    const bill=units*settings.rate;
+    rec.elecCurrReading=curr; rec.elecUnits=units; rec.elecBill=bill;
+    rec.totalPayable=rec.rent+bill+rec.carryForward;
+    if(rec.amountPaid===0) rec.status="Pending";
+    else if(rec.amountPaid<rec.totalPayable) rec.status="Partial";
+    else if(rec.amountPaid===rec.totalPayable) rec.status="Paid";
+    else{rec.status="Advance";rec.advance=rec.amountPaid-rec.totalPayable;}
+    saveRecord(rec); refreshRecords();
+    showToast("Electricity updated!");
+  };
+
+  const addTenant=(data)=>{
+    const t={id:_nextId++,...data};
+    _tenants=[..._tenants,t];
+    setTenants([..._tenants]);
+    showToast("Tenant added! ✅");
+  };
+
+  const updateTenant=(id,data)=>{
+    _tenants=_tenants.map(t=>t.id===id?{...t,...data}:t);
+    // Also update rent in current records
+    Object.keys(_records).forEach(k=>{
+      if(_records[k].tenantId===id){
+        _records[k].rent=data.rent||_records[k].rent;
+        _records[k].totalPayable=_records[k].rent+_records[k].elecBill+_records[k].carryForward;
+      }
+    });
+    setTenants([..._tenants]);
+    refreshRecords();
+    showToast("Tenant updated! ✅");
+  };
+
+  const deleteTenant=(id)=>{
+    _tenants=_tenants.filter(t=>t.id!==id);
+    setTenants([..._tenants]);
+    showToast("Tenant removed","error");
+  };
+
+  const saveSettings=(s)=>{ _settings=s; setSettings({...s}); showToast("Settings saved!"); };
+
+  const prevMonth=()=>setViewMonth(({y,m})=>m===0?{y:y-1,m:11}:{y,m:m-1});
+  const nextMonth=()=>setViewMonth(({y,m})=>m===11?{y:y+1,m:0}:{y,m:m+1});
+
+  const yk=monthKey(viewMonth.y,viewMonth.m);
+  const monthRecords=tenants.map(t=>getRecord(t.id,yk)||ensureRecord(t.id,yk));
+  const totalExpected=monthRecords.reduce((s,r)=>s+(r?.totalPayable||0),0);
+  const totalCollected=monthRecords.reduce((s,r)=>s+Math.min(r?.amountPaid||0,r?.totalPayable||0),0);
+  const totalPending=monthRecords.reduce((s,r)=>{
+    if(r&&(r.status==="Pending"||r.status==="Partial")) return s+(r.totalPayable-r.amountPaid);
+    return s;
+  },0);
+  const totalAdvance=monthRecords.reduce((s,r)=>s+(r?.advance||0),0);
+
+  return (
+    <div style={S.app}>
+      <header style={S.header}>
+        <div style={S.logo}>
+          <span style={{fontSize:20}}>🏠</span>
+          <span style={S.logoText}>RentBook</span>
+          <span style={S.logoBadge}>Pro</span>
+        </div>
+        <nav style={S.nav}>
+          {[{id:"dashboard",icon:"📊",label:"Home"},{id:"tenants",icon:"👥",label:"Tenants"},{id:"payments",icon:"💳",label:"Pay"},{id:"history",icon:"📋",label:"History"},{id:"settings",icon:"⚙️",label:"Settings"}].map(tab=>(
+            <button key={tab.id} style={{...S.navBtn,...(activeTab===tab.id?S.navBtnActive:{})}} onClick={()=>setActiveTab(tab.id)}>
+              <span>{tab.icon}</span>
+              <span style={S.navLabel}>{tab.label}</span>
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      {["dashboard","payments","history"].includes(activeTab)&&(
+        <div style={S.monthBar}>
+          <button style={S.monthBtn} onClick={prevMonth}>‹</button>
+          <span style={S.monthTitle}>{MONTHS[viewMonth.m]} {viewMonth.y}</span>
+          <button style={S.monthBtn} onClick={nextMonth}>›</button>
+        </div>
+      )}
+
+      <main style={S.main}>
+        {activeTab==="dashboard"&&<Dashboard tenants={tenants} records={monthRecords} totalExpected={totalExpected} totalCollected={totalCollected} totalPending={totalPending} totalAdvance={totalAdvance}/>}
+        {activeTab==="tenants"&&<Tenants tenants={tenants} onAdd={()=>setModal({type:"addTenant"})} onEdit={(t)=>setModal({type:"editTenant",data:t})} onDelete={deleteTenant}/>}
+        {activeTab==="payments"&&<Payments tenants={tenants} records={monthRecords} yk={yk} settings={settings} onPayment={handlePayment} onElec={handleElec} selectedTenant={selectedTenant} onClearSelected={()=>setSelectedTenant(null)}/>}
+        {activeTab==="history"&&<History tenants={tenants} allRecords={records} viewMonth={viewMonth}/>}
+        {activeTab==="settings"&&<Settings settings={settings} onSave={saveSettings}/>}
+      </main>
+
+      {modal?.type==="addTenant"&&<TenantModal mode="add" onClose={()=>setModal(null)} onSave={(d)=>{addTenant(d);setModal(null);}}/>}
+      {modal?.type==="editTenant"&&<TenantModal mode="edit" existing={modal.data} onClose={()=>setModal(null)} onSave={(d)=>{updateTenant(modal.data.id,d);setModal(null);}}/>}
+
+      {toast&&<div style={{...S.toast,background:toast.type==="error"?"#ff5e5e":"#00c896"}}>{toast.msg}</div>}
+    </div>
+  );
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+function Dashboard({tenants,records,totalExpected,totalCollected,totalPending,totalAdvance}){
+  const pct=totalExpected>0?Math.round((totalCollected/totalExpected)*100):0;
+  return (
+    <div>
+      <div style={S.statsGrid}>
+        <StatCard label="Total Expected" value={`₹${totalExpected.toLocaleString()}`} color="#7b68ee" icon="📈"/>
+        <StatCard label="Collected" value={`₹${totalCollected.toLocaleString()}`} color="#00c896" icon="✅"/>
+        <StatCard label="Pending" value={`₹${totalPending.toLocaleString()}`} color="#ff5e5e" icon="⏳"/>
+        <StatCard label="Advance" value={`₹${totalAdvance.toLocaleString()}`} color="#f5a623" icon="🔄"/>
+      </div>
+      <div style={S.progressWrap}>
+        <div style={S.progressLabel}><span>Collection Progress</span><span style={{fontWeight:700,color:"#00c896"}}>{pct}%</span></div>
+        <div style={S.progressBar}><div style={{...S.progressFill,width:`${pct}%`}}/></div>
+      </div>
+      <div style={S.sectionTitle}>Tenant Status</div>
+      <div style={S.tenantList}>
+        {tenants.map((t,i)=>{
+          const rec=records[i];
+          if(!rec) return null;
+          return (
+            <div key={t.id} style={S.tenantCard}>
+              <div style={S.tcLeft}>
+                <div style={{...S.tcAvatar,background:avatarColor(t.id)}}>{t.name[0]}</div>
+                <div>
+                  <div style={S.tcName}>{t.name}</div>
+                  <div style={S.tcRoom}>Room {t.room}</div>
+                </div>
+              </div>
+              <div style={S.tcRight}>
+                <div style={{...S.statusBadge,background:STATUS_COLOR[rec.status]+"22",color:STATUS_COLOR[rec.status]}}>{rec.status}</div>
+                <div style={S.tcAmount}>₹{rec.amountPaid.toLocaleString()} / ₹{rec.totalPayable.toLocaleString()}</div>
+                {rec.carryForward>0&&<div style={S.cfTag}>+CF ₹{rec.carryForward.toLocaleString()}</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function StatCard({label,value,color,icon}){
+  return (
+    <div style={{...S.statCard,borderTop:`3px solid ${color}`}}>
+      <div style={{fontSize:20}}>{icon}</div>
+      <div style={{...S.statValue,color}}>{value}</div>
+      <div style={S.statLabel}>{label}</div>
+    </div>
+  );
+}
+
+// ── Tenants ───────────────────────────────────────────────────────────────────
+function Tenants({tenants,onAdd,onEdit,onDelete}){
+  return (
+    <div>
+      <div style={S.pageHeader}>
+        <div style={S.sectionTitle}>All Tenants ({tenants.length})</div>
+        <button style={S.addBtn} onClick={onAdd}>+ Add Tenant</button>
+      </div>
+      {tenants.length===0&&<div style={S.emptyState}>Koi tenant nahi hai. "+ Add Tenant" se add karo.</div>}
+      {tenants.map(t=>(
+        <div key={t.id} style={S.tenantCard}>
+          <div style={S.tcLeft}>
+            <div style={{...S.tcAvatar,background:avatarColor(t.id)}}>{t.name[0]}</div>
+            <div>
+              <div style={S.tcName}>{t.name}</div>
+              <div style={S.tcRoom}>Room {t.room} • ₹{Number(t.rent).toLocaleString()}/mo</div>
+              <div style={{fontSize:11,color:"#888",marginTop:2}}>📞 {t.phone}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:4}}>
+            <button style={S.editBtn} onClick={()=>onEdit(t)}>✏️</button>
+            <button style={S.deleteBtn} onClick={()=>{if(window.confirm(`${t.name} ko delete karo?`)) onDelete(t.id);}}>🗑️</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Payments ──────────────────────────────────────────────────────────────────
+function Payments({tenants,records,yk,settings,onPayment,onElec,selectedTenant,onClearSelected}){
+  const [active,setActive]=useState(selectedTenant?.id||null);
+  const [payInput,setPayInput]=useState("");
+  const [elecInput,setElecInput]=useState("");
+
+  useEffect(()=>{ if(selectedTenant){setActive(selectedTenant.id);onClearSelected();} },[selectedTenant]);
+
+  const tenant=tenants.find(t=>t.id===active);
+  const rec=records.find(r=>r?.tenantId===active);
+
+  return (
+    <div>
+      <div style={S.tenantTabs}>
+        {tenants.map(t=>(
+          <button key={t.id} style={{...S.tenantTab,...(active===t.id?S.tenantTabActive:{})}}
+            onClick={()=>{setActive(t.id);setPayInput("");setElecInput("");}}>
+            <div style={{...S.tcAvatar,...S.tcAvatarSm,background:avatarColor(t.id)}}>{t.name[0]}</div>
+            <div style={{fontSize:11}}>{t.name.split(" ")[0]}</div>
+          </button>
+        ))}
+      </div>
+
+      {tenant&&rec?(
+        <div>
+          <div style={S.summaryCard}>
+            <div style={S.summaryRow}><span>Rent</span><span>₹{rec.rent.toLocaleString()}</span></div>
+            <div style={S.summaryRow}><span>Electricity ({rec.elecUnits} units × ₹{settings.rate})</span><span>₹{rec.elecBill.toLocaleString()}</span></div>
+            {rec.carryForward!==0&&(
+              <div style={{...S.summaryRow,color:rec.carryForward>0?"#ff5e5e":"#00c896"}}>
+                <span>{rec.carryForward>0?"Carry Forward (due)":"Advance Adjusted"}</span>
+                <span>{rec.carryForward>0?`+₹${rec.carryForward}`:`-₹${Math.abs(rec.carryForward)}`}</span>
+              </div>
+            )}
+            <div style={S.summaryDivider}/>
+            <div style={{...S.summaryRow,fontWeight:700,fontSize:16}}><span>Total Payable</span><span>₹{rec.totalPayable.toLocaleString()}</span></div>
+            <div style={{...S.summaryRow,marginTop:6}}><span>Amount Paid</span><span style={{color:STATUS_COLOR[rec.status],fontWeight:700}}>₹{rec.amountPaid.toLocaleString()}</span></div>
+            <div style={{display:"flex",justifyContent:"center",marginTop:10}}>
+              <div style={{...S.statusBig,background:STATUS_COLOR[rec.status]}}>{rec.status}</div>
+            </div>
+            {rec.status==="Advance"&&<div style={S.advanceNote}>🔄 ₹{rec.advance} advance — next month mein auto adjust hoga</div>}
+          </div>
+
+          <div style={S.inputSection}>
+            <div style={S.inputSectionTitle}>⚡ Electricity Reading</div>
+            <div style={S.elecGrid}>
+              <div style={S.elecBox}><div style={S.elecLabel}>Previous</div><div style={S.elecVal}>{rec.elecPrevReading}</div></div>
+              <div style={S.elecArrow}>→</div>
+              <div style={S.elecInputWrap}>
+                <div style={S.elecLabel}>Current Reading</div>
+                <input style={S.input} type="number" placeholder="Reading dalo" value={elecInput} onChange={e=>setElecInput(e.target.value)}/>
+              </div>
+            </div>
+            {elecInput&&Number(elecInput)>rec.elecPrevReading&&(
+              <div style={S.elecPreview}>
+                Units: {Number(elecInput)-rec.elecPrevReading} × ₹{settings.rate} = ₹{(Number(elecInput)-rec.elecPrevReading)*settings.rate}
+              </div>
+            )}
+            <button style={S.actionBtn} onClick={()=>{ if(!elecInput) return; onElec(tenant.id,elecInput,yk); setElecInput(""); }}>Update Electricity</button>
+          </div>
+
+          <div style={S.inputSection}>
+            <div style={S.inputSectionTitle}>💳 Payment Record</div>
+            <input style={S.input} type="number" placeholder={`Kitne diye? (Total: ₹${rec.totalPayable})`} value={payInput} onChange={e=>setPayInput(e.target.value)}/>
+            {payInput&&(()=>{
+              const p=Number(payInput),tot=rec.totalPayable;
+              const st=calcStatus(p,tot);
+              return <div style={{...S.elecPreview,color:STATUS_COLOR[st],marginTop:6}}>
+                → Status: {st}{st==="Advance"?` (+₹${p-tot} advance)`:""}{st==="Partial"?` (₹${tot-p} baki)`:""}</div>;
+            })()}
+            <button style={{...S.actionBtn,background:"#00c896"}} onClick={()=>{ if(!payInput) return; onPayment(tenant.id,payInput,yk); setPayInput(""); }}>💾 Save Payment</button>
+          </div>
+
+          {rec.paymentDates.length>0&&(
+            <div style={S.inputSection}>
+              <div style={S.inputSectionTitle}>📝 Is mahine ke payments</div>
+              {rec.paymentDates.map((pd,i)=>(
+                <div key={i} style={S.histRow}>
+                  <span style={S.histDate}>{fmt(pd.date)}</span>
+                  <span style={{color:"#00c896",fontWeight:600}}>₹{pd.amount.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ):(
+        <div style={S.emptyState}>👆 Upar se tenant select karo</div>
+      )}
+    </div>
+  );
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+function History({tenants,allRecords,viewMonth}){
+  const [filterTenant,setFilterTenant]=useState("all");
+  let {y,m}=viewMonth;
+  const months=[];
+  for(let i=0;i<6;i++){
+    months.push(monthKey(y,m));
+    if(m===0){y--;m=11;}else m--;
+  }
+  const filteredTenants=filterTenant==="all"?tenants:tenants.filter(t=>t.id===Number(filterTenant));
+  return (
+    <div>
+      <div style={S.pageHeader}>
+        <div style={S.sectionTitle}>Payment History</div>
+        <select style={S.select} value={filterTenant} onChange={e=>setFilterTenant(e.target.value)}>
+          <option value="all">Sabhi Tenants</option>
+          {tenants.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+        </select>
+      </div>
+      {filteredTenants.map(t=>(
+        <div key={t.id} style={S.historyBlock}>
+          <div style={S.histTenantHeader}>
+            <div style={{...S.tcAvatar,background:avatarColor(t.id)}}>{t.name[0]}</div>
+            <span style={{fontWeight:700}}>{t.name}</span>
+            <span style={S.tcRoom}>Room {t.room}</span>
+          </div>
+          <div style={S.histTable}>
+            <div style={S.histTableHead}><span>Month</span><span>Payable</span><span>Paid</span><span>Status</span></div>
+            {months.map(mk=>{
+              const rec=allRecords[`${t.id}_${mk}`];
+              const [yr,mo]=mk.split("-");
+              const label=`${MONTHS[parseInt(mo)-1]} ${yr}`;
+              if(!rec) return <div key={mk} style={S.histTableRow}><span>{label}</span><span>—</span><span>—</span><span style={{color:"#444"}}>—</span></div>;
+              return (
+                <div key={mk} style={S.histTableRow}>
+                  <span>{label}</span>
+                  <span>₹{rec.totalPayable.toLocaleString()}</span>
+                  <span>₹{rec.amountPaid.toLocaleString()}</span>
+                  <span style={{color:STATUS_COLOR[rec.status],fontWeight:600}}>{rec.status}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function Settings({settings,onSave}){
+  const [rate,setRate]=useState(settings.rate);
+  return (
+    <div>
+      <div style={S.sectionTitle}>Settings</div>
+      <div style={S.inputSection}>
+        <div style={S.inputSectionTitle}>⚡ Electricity Rate (₹ per unit)</div>
+        <input style={{...S.input,marginTop:6}} type="number" value={rate} onChange={e=>setRate(e.target.value)}/>
+        <div style={{fontSize:12,color:"#888",marginTop:6}}>Current: ₹{settings.rate}/unit</div>
+        <button style={{...S.actionBtn,marginTop:12}} onClick={()=>onSave({rate:Number(rate)})}>Save Settings</button>
+      </div>
+      <div style={S.inputSection}>
+        <div style={S.inputSectionTitle}>ℹ️ Features</div>
+        <div style={{fontSize:13,color:"#aaa",lineHeight:2}}>
+          <div>✅ Auto carry-forward for pending dues</div>
+          <div>✅ Auto advance adjustment next month</div>
+          <div>✅ Electricity reading auto-carries forward</div>
+          <div>✅ Real-time status: Paid / Partial / Pending / Advance</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Tenant Modal (Add + Edit) ─────────────────────────────────────────────────
+function TenantModal({mode,existing,onClose,onSave}){
+  const [form,setForm]=useState(existing
+    ? {name:existing.name,room:existing.room,rent:existing.rent,phone:existing.phone,joinDate:existing.joinDate}
+    : {name:"",room:"",rent:"",phone:"",joinDate:new Date().toISOString().split("T")[0]}
+  );
+  const set=(k,v)=>setForm(f=>({...f,[k]:v}));
+  const isEdit=mode==="edit";
+
+  return (
+    <div style={S.overlay} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div style={S.modalCard}>
+        <div style={S.modalHeader}>
+          <span style={{fontWeight:700,fontSize:16}}>{isEdit?"✏️ Edit Tenant":"➕ New Tenant"}</span>
+          <button style={S.closeBtn} onClick={onClose}>✕</button>
+        </div>
+
+        {isEdit&&(
+          <div style={S.infoBox}>
+            <strong style={{color:"#7b68ee"}}>📝 Edit mode:</strong><br/>
+            Yahan sirf details update hogi. Agar rent change karo to current month ka bill bhi update ho jayega.
+          </div>
+        )}
+
+        {[
+          {k:"name",label:"👤 Full Name",ph:"Tenant ka naam"},
+          {k:"room",label:"🚪 Room No.",ph:"e.g. 101, 2B"},
+          {k:"rent",label:"💰 Monthly Rent (₹)",ph:"e.g. 8000",type:"number"},
+          {k:"phone",label:"📞 Phone Number",ph:"10-digit number"},
+          {k:"joinDate",label:"📅 Join Date",type:"date"},
+        ].map(f=>(
+          <div key={f.k} style={{marginBottom:12}}>
+            <div style={S.formLabel}>{f.label}</div>
+            <input style={S.input} type={f.type||"text"} placeholder={f.ph}
+              value={form[f.k]} onChange={e=>set(f.k,e.target.value)}/>
+          </div>
+        ))}
+
+        <button style={{...S.actionBtn,marginTop:8}} onClick={()=>{
+          if(!form.name||!form.room||!form.rent) return alert("Naam, Room aur Rent zaroori hai!");
+          onSave({...form,rent:Number(form.rent)});
+        }}>{isEdit?"💾 Update Tenant":"✅ Add Tenant"}</button>
+
+        {isEdit&&(
+          <div style={{...S.warningBox,marginTop:12}}>
+            ⚠️ Agar tenant badal gaya hai (naya insaan same room mein), to pehle old tenant delete karo, phir naya add karo — taaki history alag rahe.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<RentBook/>);
+</script>
+</body>
+</html>
