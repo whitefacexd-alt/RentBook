@@ -1,24 +1,27 @@
 {
   "name": "RentBook Pro",
   "short_name": "RentBook",
-  "description": "Professional rent & tenant management",
-  "start_url": "./index.html",
+  "description": "Rent & Electricity Manager",
+  "start_url": "/RentBook/",
+  "scope": "/RentBook/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0d0d14",
-  "theme_color": "#6c5ce7",
+  "background_color": "#0e0e14",
+  "theme_color": "#0e0e14",
   "icons": [
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgcng9IjQwIiBmaWxsPSIjNmM1Y2U3Ii8+PHRleHQgeD0iOTYiIHk9IjEyMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSI5MCIgZmlsbD0id2hpdGUiPvCfkYA8L3RleHQ+PC9zdmc+",
+      "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjEwNiIgZmlsbD0iIzZjNWNlNyIvPjx0ZXh0IHg9IjI1NiIgeT0iMzIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjI0MCIgZmlsbD0id2hpdGUiPvCfkYA8L3RleHQ+PC9zdmc+",
+      "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["finance", "utilities"],
+  "lang": "en"
 }
