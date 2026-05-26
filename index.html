@@ -40,18 +40,6 @@
     --r:        14px;
     --r2:       10px;
   }
-  :root.light {
-    --bg:       #ffffff;
-    --bg1:      #f5f5f5;
-    --bg2:      #eeeeee;
-    --bg3:      #e8e8e8;
-    --bg4:      #e0e0e0;
-    --border:   #d5d5d5;
-    --border2:  #cccccc;
-    --text:     #000000;
-    --text2:    #555555;
-    --text3:    #999999;
-  }
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'Inter', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
   #root { height: 100%; }
   input, button, select { font-family: inherit; }
@@ -110,7 +98,7 @@
 <script type="text/babel">
 const { useState, useEffect, useCallback, useMemo } = React;
 
-// ─── Constants ───────────────────────────────────────────────────────────[...]
+// ─── Constants ────────────────────────────────────────────────────────────────
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const SC = { Paid:"#22c55e", Partial:"#f59e0b", Pending:"#ef4444", Advance:"#8b5cf6" };
 const AVATAR_COLORS = ["#2a2a2a","#1e1e2e","#1a2a1a","#2a1a1a","#1a1a2e","#2a2a1a","#1e2a2a"];
@@ -119,7 +107,7 @@ const fmtD  = d => { const x=new Date(d); return `${x.getDate()} ${MONTHS[x.getM
 const mkKey = (y,m) => `${y}-${String(m+1).padStart(2,"0")}`;
 const aColor = id => AVATAR_COLORS[id % AVATAR_COLORS.length];
 
-// ─── Status logic ──────────────────────────────────────────────────────────[...]
+// ─── Status logic ─────────────────────────────────────────────────────────────
 function deriveStatus(paid, payable) {
   const p = Number(paid), t = Number(payable);
   if (p <= 0)   return { status:"Pending",  baki:t,     advance:0 };
@@ -128,18 +116,32 @@ function deriveStatus(paid, payable) {
   return               { status:"Advance",  baki:0,     advance:p-t };
 }
 
-// ─── Store ────────────────────────────────────────────────────────────[...]
-let _tenants = [
+// ─── Store ────────────────────────────────────────────────────────────────────
+const DEFAULT_TENANTS = [
   {id:1,name:"Rahul Sharma",room:"101",rent:8000,phone:"9876543210",joinDate:"2024-01-01",baseReading:0},
   {id:2,name:"Priya Singh", room:"102",rent:7500,phone:"9812345678",joinDate:"2024-03-01",baseReading:0},
   {id:3,name:"Amit Kumar",  room:"201",rent:9000,phone:"9900112233",joinDate:"2023-11-01",baseReading:0},
 ];
-let _records  = {};
-let _settings = { rate: 8 };
-let _nextId   = 4;
 
+// Load from localStorage or use defaults
+function loadLS(key, def) {
+  try { const v=localStorage.getItem(key); return v?JSON.parse(v):def; } catch(e){ return def; }
+}
+function saveLS(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){}
+}
+
+let _tenants  = loadLS("rb_tenants",  DEFAULT_TENANTS);
+let _records  = loadLS("rb_records",  {});
+let _settings = loadLS("rb_settings", { rate: 8 });
+let _nextId   = loadLS("rb_nextId",   4);
+
+// Auto-save helpers
 const getRec  = (tid,yk) => _records[`${tid}_${yk}`] || null;
-const saveRec = r        => { _records[`${r.tenantId}_${r.monthKey}`] = r; };
+const saveRec = r => {
+  _records[`${r.tenantId}_${r.monthKey}`] = r;
+  saveLS("rb_records", _records);
+};
 
 function buildRec(tenant, yk, prevReading, carryFwd) {
   const total = tenant.rent + carryFwd;
@@ -182,22 +184,20 @@ function ensureRec(tenantId, yk) {
 const Icon = {
   Home:    ()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
   Users:   ()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-  Card:    ()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
+  Card:    ()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>,
   History: ()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-  Settings:()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m2.12 2.12l4.24 4.24M1 12h6m6 0h6m-17.78 7.78l4.24-4.24m2.12-2.12l4.24-4.24"/></svg>,
+  Settings:()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>,
   Plus:    ()=><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
-  Edit:    ()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
-  Trash:   ()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>,
+  Edit:    ()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>,
+  Trash:   ()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>,
   Bolt:    ()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
-  WA:      ()=><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.149-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.297-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.501-.67-.51-.173-.009-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.626.712.228 1.36.196 1.871.119.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.006a6.506 6.506 0 1 0 6.512 6.506A6.516 6.516 0 0 0 12.05 6.979"/></svg>,
+  WA:      ()=><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>,
   Check:   ()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>,
   ChevL:   ()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
   ChevR:   ()=><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
-  Sun:     ()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>,
-  Moon:    ()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>,
 };
 
-// ─── App ─────────────────────────────────────────────────────────────[...]
+// ─── App ──────────────────────────────────────────────────────────────────────
 function App() {
   const [tenants,  setTenants]  = useState([..._tenants]);
   const [settings, setSettings] = useState({..._settings});
@@ -222,25 +222,35 @@ function App() {
     const r=getRec(tid,yk)||ensureRec(tid,yk);
     r.amountPaid=Number(amount); recalc(r);
     r.paymentDates=[...r.paymentDates,{date:new Date().toISOString(),amount:Number(amount)}];
-    saveRec(r); refresh(); showToast(`Saved · ${r.status}`);
+    saveRec(r); saveLS("rb_records",_records); refresh(); showToast(`Saved · ${r.status}`);
   };
   const doElec = (tid,curr,yk) => {
     const r=getRec(tid,yk)||ensureRec(tid,yk);
     const units=Math.max(0,Number(curr)-r.elecPrevReading);
     r.elecCurrReading=Number(curr); r.elecUnits=units; r.elecBill=units*_settings.rate;
-    recalc(r); saveRec(r); refresh(); showToast("Electricity updated");
+    recalc(r); saveRec(r); saveLS("rb_records",_records); refresh(); showToast("Electricity updated");
   };
   const doAdd = d => {
     const t={id:_nextId++,...d,rent:Number(d.rent),baseReading:Number(d.baseReading||0)};
-    _tenants=[..._tenants,t]; setTenants([..._tenants]); showToast("Tenant added");
+    _tenants=[..._tenants,t];
+    saveLS("rb_tenants",_tenants); saveLS("rb_nextId",_nextId);
+    setTenants([..._tenants]); showToast("Tenant added");
   };
   const doEdit = (id,d) => {
     _tenants=_tenants.map(t=>t.id===id?{...t,...d,rent:Number(d.rent),baseReading:Number(d.baseReading||0)}:t);
     Object.values(_records).forEach(r=>{if(r.tenantId===id){r.rent=Number(d.rent);recalc(r);}});
+    saveLS("rb_tenants",_tenants); saveLS("rb_records",_records);
     setTenants([..._tenants]); showToast("Updated");
   };
-  const doDel = id => { _tenants=_tenants.filter(t=>t.id!==id); setTenants([..._tenants]); showToast("Removed",false); };
-  const doSettings = s => { _settings=s; setSettings({...s}); showToast("Saved"); };
+  const doDel = id => {
+    _tenants=_tenants.filter(t=>t.id!==id);
+    saveLS("rb_tenants",_tenants);
+    setTenants([..._tenants]); showToast("Removed",false);
+  };
+  const doSettings = s => {
+    _settings=s; saveLS("rb_settings",s);
+    setSettings({...s}); showToast("Saved");
+  };
 
   const prevM = ()=>setVm(({y,m})=>m===0?{y:y-1,m:11}:{y,m:m-1});
   const nextM = ()=>setVm(({y,m})=>m===11?{y:y+1,m:0}:{y,m:m+1});
@@ -261,7 +271,7 @@ function App() {
   ];
 
   return (
-    <div style={{display:"flex",flexDirection:"column",height:"100vh",background:"var(--bg)",overflow:"hidden"}}>
+    <div style={{display:"flex",flexDirection:"column",height:"100vh",background:"#000",overflow:"hidden"}}>
       {/* Header */}
       <header style={H.header}>
         <div style={H.brand}>
@@ -312,7 +322,7 @@ function App() {
   );
 }
 
-// ─── Dashboard ───────────────────────────────────────────────────────────[...]
+// ─── Dashboard ────────────────────────────────────────────────────────────────
 function Dashboard({tenants,recs,stats,vm}){
   const pct = stats.payable>0 ? Math.round((stats.collected/stats.payable)*100) : 0;
   return (
@@ -331,13 +341,13 @@ function Dashboard({tenants,recs,stats,vm}){
           <span style={{fontSize:12,fontWeight:600,color:"#666",letterSpacing:1,textTransform:"uppercase"}}>Collection</span>
           <span style={{fontSize:14,fontWeight:700,color:pct===100?SC.Paid:"#fff"}}>{pct}%</span>
         </div>
-        <div style={{background:"var(--bg3)",borderRadius:99,height:5,overflow:"hidden"}}>
+        <div style={{background:"#1a1a1a",borderRadius:99,height:5,overflow:"hidden"}}>
           <div style={{background:pct===100?"#22c55e":"#fff",height:"100%",width:`${pct}%`,borderRadius:99,transition:"width 0.6s ease"}}/>
         </div>
       </div>
 
       {/* Tenant list */}
-      <div style={{fontSize:11,fontWeight:600,letterSpacing:1.5,color:"var(--text3)",textTransform:"uppercase",marginBottom:10}}>
+      <div style={{fontSize:11,fontWeight:600,letterSpacing:1.5,color:"#444",textTransform:"uppercase",marginBottom:10}}>
         Tenants — {MONTHS[vm.m]}
       </div>
       {tenants.map((t,i)=>{
@@ -347,12 +357,12 @@ function Dashboard({tenants,recs,stats,vm}){
           <div key={t.id} style={{...C.card,marginBottom:8,display:"flex",alignItems:"center",gap:12}}>
             <div style={{...C.av,background:aColor(t.id)}}>{t.name[0]}</div>
             <div style={{flex:1,minWidth:0}}>
-              <div style={{fontWeight:600,fontSize:14,color:"var(--text)"}}>{t.name}</div>
-              <div style={{fontSize:12,color:"var(--text2)",marginTop:2}}>Room {t.room}</div>
+              <div style={{fontWeight:600,fontSize:14,color:"#fff"}}>{t.name}</div>
+              <div style={{fontSize:12,color:"#555",marginTop:2}}>Room {t.room}</div>
             </div>
             <div style={{textAlign:"right"}}>
               <div style={{fontSize:11,fontWeight:700,padding:"3px 8px",borderRadius:20,background:`${SC[r.status]}18`,color:SC[r.status]}}>{r.status}</div>
-              <div style={{fontSize:11,color:"var(--text2)",marginTop:4}}>
+              <div style={{fontSize:11,color:"#555",marginTop:4}}>
                 ₹{r.amountPaid.toLocaleString()} / ₹{r.totalPayable.toLocaleString()}
               </div>
               {r.baki>0 && <div style={{fontSize:10,color:SC.Pending,marginTop:2}}>₹{r.baki.toLocaleString()} baki</div>}
@@ -367,19 +377,19 @@ function Dashboard({tenants,recs,stats,vm}){
 function StatBox({label,val,color,sub}){
   return (
     <div style={{...C.card,padding:"14px 14px"}}>
-      <div style={{fontSize:10,fontWeight:600,letterSpacing:1.5,color:"var(--text3)",textTransform:"uppercase",marginBottom:8}}>{label}</div>
+      <div style={{fontSize:10,fontWeight:600,letterSpacing:1.5,color:"#444",textTransform:"uppercase",marginBottom:8}}>{label}</div>
       <div style={{fontSize:20,fontWeight:800,color,lineHeight:1}}>{val}</div>
-      <div style={{fontSize:11,color:"var(--text3)",marginTop:6}}>{sub}</div>
+      <div style={{fontSize:11,color:"#444",marginTop:6}}>{sub}</div>
     </div>
   );
 }
 
-// ─── Tenants ───────────────────────────────────────────────────────────[...]
+// ─── Tenants ──────────────────────────────────────────────────────────────────
 function Tenants({tenants,onAdd,onEdit,onDel}){
   return (
     <div className="fade-up">
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-        <div style={C.pageTitle}>Tenants <span style={{color:"var(--text2)",fontWeight:400}}>({tenants.length})</span></div>
+        <div style={C.pageTitle}>Tenants <span style={{color:"#444",fontWeight:400}}>({tenants.length})</span></div>
         <button style={C.addBtn} onClick={onAdd}><Icon.Plus/> Add</button>
       </div>
       {tenants.length===0 && <Empty msg="No tenants yet. Tap Add to get started."/>}
@@ -387,12 +397,12 @@ function Tenants({tenants,onAdd,onEdit,onDel}){
         <div key={t.id} style={{...C.card,marginBottom:8,display:"flex",alignItems:"center",gap:12}}>
           <div style={{...C.av,background:aColor(t.id)}}>{t.name[0]}</div>
           <div style={{flex:1,minWidth:0}}>
-            <div style={{fontWeight:600,fontSize:14,color:"var(--text)"}}>{t.name}</div>
-            <div style={{fontSize:12,color:"var(--text2)",marginTop:2}}>Room {t.room} · ₹{Number(t.rent).toLocaleString()}/mo</div>
-            <div style={{fontSize:11,color:"var(--text3)",marginTop:2}}>📞 {t.phone}</div>
+            <div style={{fontWeight:600,fontSize:14}}>{t.name}</div>
+            <div style={{fontSize:12,color:"#555",marginTop:2}}>Room {t.room} · ₹{Number(t.rent).toLocaleString()}/mo</div>
+            <div style={{fontSize:11,color:"#444",marginTop:2}}>📞 {t.phone}</div>
           </div>
           <div style={{display:"flex",gap:6}}>
-            <Btn2 onClick={()=>onEdit(t)}  color="var(--text)"    bg="var(--bg3)"><Icon.Edit/></Btn2>
+            <Btn2 onClick={()=>onEdit(t)}  color="#fff"    bg="#1e1e1e"><Icon.Edit/></Btn2>
             <Btn2 onClick={()=>{if(window.confirm(`Delete ${t.name}?`))onDel(t.id);}} color={SC.Pending} bg="#1e0a0a"><Icon.Trash/></Btn2>
           </div>
         </div>
@@ -401,7 +411,7 @@ function Tenants({tenants,onAdd,onEdit,onDel}){
   );
 }
 
-// ─── Payments ───────────────────────────────────────────────────────────[...]
+// ─── Payments ─────────────────────────────────────────────────────────────────
 function Payments({tenants,recs,yk,settings,vm,onPayment,onElec}){
   const [active,  setActive]  = useState(null);
   const [payVal,  setPayVal]  = useState("");
@@ -416,7 +426,7 @@ function Payments({tenants,recs,yk,settings,vm,onPayment,onElec}){
     const phone = "91"+tenant.phone.replace(/\D/g,"").slice(-10);
     const msg = rec.status==="Pending"
       ? `Namaskar ${tenant.name} ji 🙏\n\n${mLabel} ka kiraya pending hai.\n\n💰 Total: ₹${rec.totalPayable.toLocaleString()}\n\nKripya jald payment karein.\nDhanyawad 🙏`
-      : `Namaskar ${tenant.name} ji 🙏\n\n${mLabel} ka kiraya aadha baki hai.\n\n✅ Diya: ₹${rec.amountPaid.toLocaleString()}\n⏳ Baki: ₹${rec.baki.toLocaleString()}\n💰 Total: ₹${rec.totalPayable.toLocaleString()}\n\nKripya jald payment karein.\nDhanyawad 🙏`;
+      : `Namaskar ${tenant.name} ji 🙏\n\n${mLabel} ka kiraya aadha baki hai.\n\n✅ Diya: ₹${rec.amountPaid.toLocaleString()}\n⏳ Baki: ₹${rec.baki.toLocaleString()}\n💰 Total: ₹${rec.totalPayable.toLocaleString()}\n\nKripya baaki payment karein.\nDhanyawad 🙏`;
     window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,"_blank");
   };
 
@@ -429,9 +439,9 @@ function Payments({tenants,recs,yk,settings,vm,onPayment,onElec}){
           const on = active===t.id;
           return (
             <button key={t.id} onClick={()=>{setActive(t.id);setPayVal("");setElecVal("");}}
-              style={{flexShrink:0,background:on?"var(--text)":"var(--bg2)",border:`1px solid ${on?"var(--text)":"var(--border)"}`,borderRadius:12,padding:"8px 12px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:6,textAlign:"center"}}>
-              <div style={{...C.av,...C.avSm,background:on?"var(--bg)":aColor(t.id),color:on?"var(--text)":"#fff"}}>{t.name[0]}</div>
-              <div style={{fontSize:11,fontWeight:600,color:on?"var(--bg)":"var(--text2)"}}>{t.name.split(" ")[0]}</div>
+              style={{flexShrink:0,background:on?"#fff":"#111",border:`1px solid ${on?"#fff":"#222"}`,borderRadius:12,padding:"8px 12px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:4,minWidth:64,transition:"all 0.2s"}}>
+              <div style={{...C.av,...C.avSm,background:on?"#000":aColor(t.id),color:on?"#000":"#fff"}}>{t.name[0]}</div>
+              <div style={{fontSize:11,fontWeight:600,color:on?"#000":"#888"}}>{t.name.split(" ")[0]}</div>
               {r && <div style={{width:6,height:6,borderRadius:99,background:SC[r.status]}}/>}
             </button>
           );
@@ -444,14 +454,14 @@ function Payments({tenants,recs,yk,settings,vm,onPayment,onElec}){
         <div>
           {/* Bill summary */}
           <div style={C.card}>
-            <div style={{fontSize:11,fontWeight:600,letterSpacing:1.5,color:"var(--text3)",textTransform:"uppercase",marginBottom:12}}>
+            <div style={{fontSize:11,fontWeight:600,letterSpacing:1.5,color:"#444",textTransform:"uppercase",marginBottom:12}}>
               Bill Summary · {mLabel}
             </div>
             <BillRow label="Base Rent"                                   val={`₹${rec.rent.toLocaleString()}`}/>
             <BillRow label={`Electricity · ${rec.elecUnits} units × ₹${settings.rate}`} val={`₹${rec.elecBill.toLocaleString()}`}/>
             {rec.carryFwd>0 && <BillRow label="Carry Forward (due)"      val={`+₹${rec.carryFwd.toLocaleString()}`} color={SC.Pending}/>}
             {rec.carryFwd<0 && <BillRow label="Advance Credit"            val={`-₹${Math.abs(rec.carryFwd).toLocaleString()}`} color={SC.Paid}/>}
-            <div style={{border:"none",borderTop:"1px solid var(--bg3)",margin:"10px 0"}}/>
+            <div style={{border:"none",borderTop:"1px solid #1a1a1a",margin:"10px 0"}}/>
             <BillRow label="Total Payable" val={`₹${rec.totalPayable.toLocaleString()}`} bold/>
             <BillRow label="Paid"          val={`₹${rec.amountPaid.toLocaleString()}`}   color={SC[rec.status]} bold/>
 
@@ -463,18 +473,18 @@ function Payments({tenants,recs,yk,settings,vm,onPayment,onElec}){
               {rec.baki>0    && <span style={{...C.pill,background:"#1a0a0a",color:SC.Pending,fontSize:12}}>⏳ ₹{rec.baki.toLocaleString()} baki</span>}
               {rec.advance>0 && <span style={{...C.pill,background:"#0d0a1a",color:SC.Advance,fontSize:12}}>🔄 ₹{rec.advance.toLocaleString()} advance</span>}
             </div>
-            {rec.advance>0 && <div style={{marginTop:10,fontSize:12,color:"var(--text2)",textAlign:"center"}}>Next month mein ₹{rec.advance.toLocaleString()} auto-adjust hoga</div>}
+            {rec.advance>0 && <div style={{marginTop:10,fontSize:12,color:"#555",textAlign:"center"}}>Next month mein ₹{rec.advance.toLocaleString()} auto-adjust hoga</div>}
           </div>
 
           {/* Electricity */}
           <div style={C.card}>
             <SectionHead icon={<Icon.Bolt/>} title="Electricity Reading"/>
             <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-              <div style={{flex:1,background:"var(--bg1)",borderRadius:10,padding:"10px 12px",textAlign:"center",border:"1px solid var(--bg3)"}}>
-                <div style={{fontSize:10,color:"var(--text3)",marginBottom:4,letterSpacing:1}}>PREVIOUS</div>
-                <div style={{fontSize:20,fontWeight:700,color:"var(--text)"}}>{rec.elecPrevReading}</div>
+              <div style={{flex:1,background:"#0a0a0a",borderRadius:10,padding:"10px 12px",textAlign:"center",border:"1px solid #1a1a1a"}}>
+                <div style={{fontSize:10,color:"#444",marginBottom:4,letterSpacing:1}}>PREVIOUS</div>
+                <div style={{fontSize:20,fontWeight:700,color:"#fff"}}>{rec.elecPrevReading}</div>
               </div>
-              <div style={{color:"var(--text2)",fontSize:16}}>→</div>
+              <div style={{color:"#333",fontSize:16}}>→</div>
               <div style={{flex:1.4}}>
                 <Input type="number" placeholder="Current reading" value={elecVal} onChange={e=>setElecVal(e.target.value)}/>
               </div>
@@ -503,9 +513,9 @@ function Payments({tenants,recs,yk,settings,vm,onPayment,onElec}){
               return (
                 <div style={{...C.infoBox,marginTop:8,color:SC[d.status]}}>
                   Status → <b>{d.status}</b>
-                  {d.status==="Partial" && <span style={{color:"var(--text2)"}}> · ₹{d.baki.toLocaleString()} baki rahega</span>}
-                  {d.status==="Advance" && <span style={{color:"var(--text2)"}}> · ₹{d.advance.toLocaleString()} advance</span>}
-                  {d.status==="Pending" && <span style={{color:"var(--text2)"}}> · Poora ₹${rec.totalPayable.toLocaleString()} baki</span>}
+                  {d.status==="Partial" && <span style={{color:"#888"}}> · ₹{d.baki.toLocaleString()} baki rahega</span>}
+                  {d.status==="Advance" && <span style={{color:"#888"}}> · ₹{d.advance.toLocaleString()} advance</span>}
+                  {d.status==="Pending" && <span style={{color:"#888"}}> · Poora ₹{rec.totalPayable.toLocaleString()} baki</span>}
                 </div>
               );
             })()}
@@ -517,7 +527,7 @@ function Payments({tenants,recs,yk,settings,vm,onPayment,onElec}){
 
           {/* WhatsApp */}
           {(rec.status==="Pending"||rec.status==="Partial") && tenant.phone && (
-            <button onClick={sendWA} style={{width:"100%",background:"#075e54",border:"none",borderRadius:14,padding:"14px 16px",display:"flex",alignItems:"center",gap:12,marginBottom:12,cursor:"pointer"}}>
+            <button onClick={sendWA} style={{width:"100%",background:"#075e54",border:"none",borderRadius:14,padding:"14px 16px",display:"flex",alignItems:"center",gap:12,marginBottom:12,cursor:"pointer",color:"#fff"}}>
               <div style={{color:"#25d366",flexShrink:0}}><Icon.WA/></div>
               <div style={{flex:1,textAlign:"left"}}>
                 <div style={{fontWeight:700,fontSize:14,color:"#fff"}}>Send WhatsApp Reminder</div>
@@ -534,8 +544,8 @@ function Payments({tenants,recs,yk,settings,vm,onPayment,onElec}){
             <div style={C.card}>
               <SectionHead icon={<Icon.History/>} title="This Month Payments"/>
               {rec.paymentDates.map((p,i)=>(
-                <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid var(--bg2)",fontSize:13}}>
-                  <span style={{color:"var(--text2)"}}>{fmtD(p.date)}</span>
+                <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"7px 0",borderBottom:"1px solid #111",fontSize:13}}>
+                  <span style={{color:"#555"}}>{fmtD(p.date)}</span>
                   <span style={{color:SC.Paid,fontWeight:600}}>₹{p.amount.toLocaleString()}</span>
                 </div>
               ))}
@@ -547,7 +557,7 @@ function Payments({tenants,recs,yk,settings,vm,onPayment,onElec}){
   );
 }
 
-// ─── History ───────────────────────────────────────────────────────────[...]
+// ─── History ──────────────────────────────────────────────────────────────────
 function History({tenants,vm}){
   const [filter,setFilter] = useState("all");
   let {y,m} = vm;
@@ -561,7 +571,7 @@ function History({tenants,vm}){
     <div className="fade-up">
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
         <div style={C.pageTitle}>History</div>
-        <select style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:8,padding:"6px 10px",color:"var(--text)",fontSize:12}} value={filter} onChange={e=>setFilter(e.target.value)}>
+        <select style={{background:"#111",border:"1px solid #222",borderRadius:8,padding:"6px 10px",color:"#fff",fontSize:12}} value={filter} onChange={e=>setFilter(e.target.value)}>
           <option value="all">All Tenants</option>
           {tenants.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
@@ -571,21 +581,21 @@ function History({tenants,vm}){
           <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
             <div style={{...C.av,background:aColor(t.id)}}>{t.name[0]}</div>
             <div>
-              <div style={{fontWeight:600,fontSize:14,color:"var(--text)"}}>{t.name}</div>
-              <div style={{fontSize:12,color:"var(--text2)"}}>Room {t.room}</div>
+              <div style={{fontWeight:600,fontSize:14}}>{t.name}</div>
+              <div style={{fontSize:12,color:"#555"}}>Room {t.room}</div>
             </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1.2fr",fontSize:10,fontWeight:700,letterSpacing:1,color:"var(--text3)",textTransform:"uppercase",marginBottom:8,paddingBottom:8,borderBottom:"1px solid var(--bg2)"}}>
+          <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1.2fr",fontSize:10,fontWeight:700,letterSpacing:1,color:"#333",textTransform:"uppercase",marginBottom:8,paddingBottom:8,borderBottom:"1px solid #1a1a1a"}}>
             <span>Month</span><span>Payable</span><span>Paid</span><span>Status</span>
           </div>
           {months.map(mk=>{
             const r=getRec(t.id,mk);
             const [yr,mo]=mk.split("-");
             const lbl=`${MONTHS[parseInt(mo)-1]} ${yr}`;
-            if(!r) return <div key={mk} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1.2fr",padding:"5px 0",fontSize:12,color:"var(--text3)",borderBottom:"1px solid var(--bg2)"}}>
+            if(!r) return <div key={mk} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1.2fr",padding:"5px 0",fontSize:12,color:"#333",borderBottom:"1px solid #111"}}>
               <span>{lbl}</span><span>—</span><span>—</span><span>—</span></div>;
-            return <div key={mk} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1.2fr",padding:"5px 0",fontSize:12,borderBottom:"1px solid var(--bg2)"}}>
-              <span style={{color:"var(--text2)"}}>{lbl}</span>
+            return <div key={mk} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1.2fr",padding:"5px 0",fontSize:12,borderBottom:"1px solid #111"}}>
+              <span style={{color:"#888"}}>{lbl}</span>
               <span>₹{r.totalPayable.toLocaleString()}</span>
               <span>₹{r.amountPaid.toLocaleString()}</span>
               <span style={{color:SC[r.status],fontWeight:700}}>{r.status}</span>
@@ -597,42 +607,22 @@ function History({tenants,vm}){
   );
 }
 
-// ─── Settings ───────────────────────────────────────────────────────────[...]
+// ─── Settings ─────────────────────────────────────────────────────────────────
 function Settings({settings,onSave}){
   const [rate,setRate] = useState(settings.rate);
-  
-  const toggleTheme = () => {
-    document.body.classList.toggle('light');
-  };
-
   return (
     <div className="fade-up">
       <div style={{...C.pageTitle,marginBottom:16}}>Settings</div>
-      
-      {/* Dark/Light Mode Toggle */}
-      <div style={C.card}>
-        <SectionHead icon={<Icon.Sun/>} title="Theme"/>
-        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
-          <span style={{fontSize:12,color:"var(--text2)"}}>Dark / Light Mode</span>
-          <button onClick={toggleTheme} style={{background:"var(--text)",border:"none",borderRadius:20,width:50,height:28,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"flex-end",padding:"2px 4px",position:"relative",transition:"all 0.3s ease"}}>
-            <div style={{width:22,height:22,borderRadius:"50%",background:"var(--bg)",display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.3s ease"}}>
-              {document.body.classList.contains('light') ? <Icon.Sun/> : <Icon.Moon/>}
-            </div>
-          </button>
-        </div>
-      </div>
-
       <div style={C.card}>
         <SectionHead icon={<Icon.Bolt/>} title="Electricity Rate"/>
-        <div style={{fontSize:12,color:"var(--text2)",marginBottom:10}}>Current: ₹{settings.rate} per unit</div>
+        <div style={{fontSize:12,color:"#555",marginBottom:10}}>Current: ₹{settings.rate} per unit</div>
         <Input type="number" value={rate} onChange={e=>setRate(e.target.value)} placeholder="Rate per unit"/>
         <PrimaryBtn style={{marginTop:10}} onClick={()=>onSave({rate:Number(rate)})}>Save Settings</PrimaryBtn>
       </div>
-      
       <div style={C.card}>
         <SectionHead icon={<Icon.Check/>} title="How It Works"/>
-        {["Partial pay → baki amount clearly dikhega","Extra diya → Advance (rent mein nahi jayega)","Advance → next month auto credit","Pending → next month carry forward","Electricity: curr - prev = units used"].map((x,i)=>(
-          <div key={i} style={{fontSize:12,color:"var(--text2)",padding:"5px 0",borderBottom:"1px solid var(--bg2)",display:"flex",gap:8,alignItems:"flex-start"}}>
+        {["Partial pay → baki amount clearly dikhega","Extra diya → Advance (rent mein nahi jayega)","Advance → next month auto credit","Pending → next month carry forward","Electricity: curr − prev = units used","WhatsApp reminder: Pending/Partial tenants pe"].map((x,i)=>(
+          <div key={i} style={{fontSize:12,color:"#555",padding:"5px 0",borderBottom:"1px solid #111",display:"flex",gap:8,alignItems:"flex-start"}}>
             <span style={{color:SC.Paid,flexShrink:0,marginTop:1}}><Icon.Check/></span>{x}
           </div>
         ))}
@@ -641,7 +631,7 @@ function Settings({settings,onSave}){
   );
 }
 
-// ─── Tenant Modal ──────────────────────────────────────────────────────────[...]
+// ─── Tenant Modal ─────────────────────────────────────────────────────────────
 function TenantModal({mode,existing,onClose,onSave}){
   const isEdit = mode==="edit";
   const [form,setForm] = useState(existing
@@ -659,10 +649,10 @@ function TenantModal({mode,existing,onClose,onSave}){
   ];
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:200}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-      <div style={{background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:"20px 20px 0 0",padding:"20px 16px 40px",width:"100%",maxWidth:480,maxHeight:"90vh",overflowY:"auto"}}>
+      <div style={{background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:"20px 20px 0 0",padding:"20px 16px 40px",width:"100%",maxWidth:480,maxHeight:"90vh",overflowY:"auto"}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-          <div style={{fontWeight:700,fontSize:16,color:"var(--text)"}}>{isEdit?"Edit Tenant":"New Tenant"}</div>
-          <button style={{background:"var(--bg3)",border:"none",color:"var(--text2)",width:30,height:30,borderRadius:8,cursor:"pointer",fontSize:16}} onClick={onClose}>✕</button>
+          <div style={{fontWeight:700,fontSize:16}}>{isEdit?"Edit Tenant":"New Tenant"}</div>
+          <button style={{background:"#1a1a1a",border:"none",color:"#888",width:30,height:30,borderRadius:8,cursor:"pointer",fontSize:16}} onClick={onClose}>✕</button>
         </div>
         {!isEdit && (
           <div style={{...C.infoBox,marginBottom:16}}>
@@ -671,7 +661,7 @@ function TenantModal({mode,existing,onClose,onSave}){
         )}
         {fields.map(f=>(
           <div key={f.k} style={{marginBottom:14}}>
-            <div style={{fontSize:11,fontWeight:600,color:"var(--text2)",marginBottom:6,letterSpacing:0.5}}>{f.lbl.toUpperCase()}</div>
+            <div style={{fontSize:11,fontWeight:600,color:"#555",marginBottom:6,letterSpacing:0.5}}>{f.lbl.toUpperCase()}</div>
             <Input type={f.type} placeholder={f.ph} value={form[f.k]} onChange={e=>set(f.k,e.target.value)}/>
           </div>
         ))}
@@ -684,38 +674,38 @@ function TenantModal({mode,existing,onClose,onSave}){
   );
 }
 
-// ─── Small components ────────────────────────────────────────────────────────[...]
-const Input = ({style,...p}) => <input style={{background:"var(--bg1)",border:"1px solid var(--border)",borderRadius:10,padding:"11px 13px",color:"var(--text)",fontSize:14,width:"100%",outline:"none",...style}} {...p}/>;
-const PrimaryBtn = ({style,children,...p}) => <button style={{background:"var(--text)",border:"none",color:"var(--bg)",padding:"12px",borderRadius:10,fontWeight:700,cursor:"pointer",fontSize:14,width:"100%",...style}} {...p}>{children}</button>;
+// ─── Small components ─────────────────────────────────────────────────────────
+const Input = ({style,...p}) => <input style={{background:"#0a0a0a",border:"1px solid #1e1e1e",borderRadius:10,padding:"11px 13px",color:"#fff",fontSize:14,width:"100%",outline:"none",...style}} {...p}/>;
+const PrimaryBtn = ({style,children,...p}) => <button style={{background:"#fff",border:"none",color:"#000",padding:"12px",borderRadius:10,fontWeight:700,cursor:"pointer",fontSize:14,width:"100%",...style}} {...p}>{children}</button>;
 const Btn2 = ({onClick,color,bg,children}) => <button onClick={onClick} style={{background:bg,border:"none",color,width:32,height:32,borderRadius:8,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{children}</button>;
 const BillRow = ({label,val,color,bold}) => <div style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"4px 0",fontWeight:bold?700:400}}>
-  <span style={{color:"var(--text2)"}}>{label}</span><span style={{color:color||"var(--text)"}}>{val}</span></div>;
-const SectionHead = ({icon,title}) => <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,fontSize:12,fontWeight:600,letterSpacing:1,color:"var(--text3)",textTransform:"uppercase"}}>
-  <span style={{color:"var(--text2)"}}>{icon}</span>{title}</div>;
-const Empty = ({msg}) => <div style={{textAlign:"center",padding:"48px 20px",color:"var(--text3)",fontSize:14}}>{msg}</div>;
+  <span style={{color:"#555"}}>{label}</span><span style={{color:color||"#fff"}}>{val}</span></div>;
+const SectionHead = ({icon,title}) => <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,fontSize:12,fontWeight:600,letterSpacing:1,color:"#666",textTransform:"uppercase"}}>
+  <span style={{color:"#444"}}>{icon}</span>{title}</div>;
+const Empty = ({msg}) => <div style={{textAlign:"center",padding:"48px 20px",color:"#333",fontSize:14}}>{msg}</div>;
 
-// ─── Styles ──────────────────────────────────────────────────────────[...]
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const H = {
-  header:    {background:"var(--bg)",borderBottom:"1px solid var(--border)",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:50},
+  header:    {background:"#000",borderBottom:"1px solid #111",padding:"12px 16px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:50},
   brand:     {display:"flex",alignItems:"center",gap:10},
-  brandName: {fontWeight:900,fontSize:15,letterSpacing:3,color:"var(--text)"},
+  brandName: {fontWeight:900,fontSize:15,letterSpacing:3,color:"#fff"},
   monthRow:  {display:"flex",alignItems:"center",gap:12},
-  mBtn:      {background:"var(--bg2)",border:"1px solid var(--border)",color:"var(--text)",width:30,height:30,borderRadius:8,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"},
-  mLabel:    {fontWeight:700,fontSize:13,minWidth:90,textAlign:"center",color:"var(--text)"},
-  bottomNav: {position:"fixed",bottom:0,left:0,right:0,background:"var(--bg)",borderTop:"1px solid var(--border)",display:"flex",padding:"8px 0 calc(8px + env(safe-area-inset-bottom))",zIndex:50},
-  navItem:   {flex:1,background:"none",border:"none",color:"var(--text3)",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 0",fontSize:13},
-  navActive: {color:"var(--text)"},
+  mBtn:      {background:"#111",border:"1px solid #1e1e1e",color:"#fff",width:30,height:30,borderRadius:8,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"},
+  mLabel:    {fontWeight:700,fontSize:13,minWidth:90,textAlign:"center",color:"#fff"},
+  bottomNav: {position:"fixed",bottom:0,left:0,right:0,background:"#000",borderTop:"1px solid #111",display:"flex",padding:"8px 0 calc(8px + env(safe-area-inset-bottom))",zIndex:50},
+  navItem:   {flex:1,background:"none",border:"none",color:"#444",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",gap:3,padding:"4px 0",fontSize:13},
+  navActive: {color:"#fff"},
   navLbl:    {fontSize:9,fontWeight:600,letterSpacing:0.5,textTransform:"uppercase"},
-  toast:     {position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",color:"#000",fontWeight:700,fontSize:13,padding:"10px 20px",borderRadius:20,zIndex:300,boxShadow:"0 4px 20px rgba(0,0,0,0.3)"},
+  toast:     {position:"fixed",bottom:90,left:"50%",transform:"translateX(-50%)",color:"#000",fontWeight:700,fontSize:13,padding:"10px 20px",borderRadius:20,zIndex:300,boxShadow:"0 4px 20px rgba(0,0,0,0.5)",display:"flex",alignItems:"center",gap:8,whiteSpace:"nowrap"},
 };
 const C = {
-  card:      {background:"var(--bg1)",border:"1px solid var(--border)",borderRadius:14,padding:"14px",marginBottom:10},
+  card:      {background:"#0d0d0d",border:"1px solid #1a1a1a",borderRadius:14,padding:"14px",marginBottom:10},
   av:        {width:40,height:40,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:15,color:"#fff",flexShrink:0},
   avSm:      {width:30,height:30,fontSize:12,borderRadius:8},
   pill:      {display:"inline-flex",alignItems:"center",padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600},
-  pageTitle: {fontWeight:800,fontSize:18,color:"var(--text)"},
-  addBtn:    {background:"var(--text)",border:"none",color:"var(--bg)",padding:"8px 14px",borderRadius:10,fontWeight:700,cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",gap:6},
-  infoBox:   {background:"var(--bg2)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px",fontSize:12,color:"var(--text2)",lineHeight:1.6},
+  pageTitle: {fontWeight:800,fontSize:18,color:"#fff"},
+  addBtn:    {background:"#fff",border:"none",color:"#000",padding:"8px 14px",borderRadius:10,fontWeight:700,cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",gap:6},
+  infoBox:   {background:"#111",border:"1px solid #1e1e1e",borderRadius:8,padding:"8px 12px",fontSize:12,color:"#888",lineHeight:1.6},
 };
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
