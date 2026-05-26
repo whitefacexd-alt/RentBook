@@ -1,1560 +1,686 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="RentBook">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1a1a2e">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="RentBook"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0e0e14"/>
 <title>RentBook Pro</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <style>
-:root {
-  --bg: #0f0f1a;
-  --surface: #1a1a2e;
-  --surface2: #16213e;
-  --surface3: #0d1117;
-  --accent: #7c3aed;
-  --accent2: #a855f7;
-  --green: #10b981;
-  --red: #ef4444;
-  --orange: #f59e0b;
-  --blue: #3b82f6;
-  --text: #f1f5f9;
-  --text2: #94a3b8;
-  --text3: #475569;
-  --border: #2d2d4e;
-  --card: #1e1e35;
-  --radius: 16px;
-  --radius-sm: 10px;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-  padding-bottom: 80px;
-}
-h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
-
-/* TOP BAR */
-.topbar {
-  position: sticky; top: 0; z-index: 100;
-  background: rgba(15,15,26,0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 20px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.topbar h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-.topbar h1 span { color: var(--accent2); }
-.topbar-actions { display: flex; gap: 8px; }
-.icon-btn {
-  width: 38px; height: 38px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--text2);
-  font-size: 16px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: all 0.2s;
-}
-.icon-btn:hover { border-color: var(--accent); color: var(--accent2); }
-
-/* NAV */
-.bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(15,15,26,0.97);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid var(--border);
-  display: flex;
-  padding-bottom: env(safe-area-inset-bottom);
-}
-.nav-item {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  padding: 10px 4px 8px;
-  cursor: pointer; transition: all 0.2s;
-  color: var(--text3); font-size: 10px; font-weight: 500;
-  border: none; background: transparent;
-}
-.nav-item .nav-icon { font-size: 20px; margin-bottom: 3px; }
-.nav-item.active { color: var(--accent2); }
-.nav-item.active .nav-icon { filter: drop-shadow(0 0 8px var(--accent2)); }
-
-/* PAGES */
-.page { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
-.page.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-/* CARDS */
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-  margin-bottom: 14px;
-}
-.card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 14px;
-}
-.card-title { font-size: 14px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
-
-/* STAT GRID */
-.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-.stat-box {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-}
-.stat-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
-.stat-value { font-size: 20px; font-weight: 700; font-family: 'Syne', sans-serif; }
-.stat-value.green { color: var(--green); }
-.stat-value.red { color: var(--red); }
-.stat-value.orange { color: var(--orange); }
-.stat-value.purple { color: var(--accent2); }
-
-/* TENANT CARD */
-.tenant-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.tenant-card:hover { border-color: var(--accent); transform: translateY(-1px); }
-.tenant-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
-.tenant-avatar {
-  width: 44px; height: 44px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 700; font-family: 'Syne', sans-serif;
-  flex-shrink: 0;
-}
-.tenant-name { font-size: 16px; font-weight: 700; }
-.tenant-room { font-size: 12px; color: var(--text2); margin-top: 2px; }
-.tenant-meta { display: flex; gap: 8px; flex-wrap: wrap; }
-.badge {
-  padding: 3px 10px; border-radius: 20px;
-  font-size: 11px; font-weight: 600;
-}
-.badge-green { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
-.badge-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
-.badge-orange { background: rgba(245,158,11,0.15); color: var(--orange); border: 1px solid rgba(245,158,11,0.3); }
-.badge-purple { background: rgba(168,85,247,0.15); color: var(--accent2); border: 1px solid rgba(168,85,247,0.3); }
-.badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
-
-/* AMOUNT DISPLAY */
-.amount-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
-.amount-row:last-child { border-bottom: none; }
-.amount-label { font-size: 13px; color: var(--text2); }
-.amount-val { font-size: 14px; font-weight: 600; }
-
-/* BUTTONS */
-.btn {
-  padding: 12px 20px; border-radius: var(--radius-sm);
-  font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif;
-  cursor: pointer; transition: all 0.2s; border: none;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
-.btn-green { background: var(--green); color: white; }
-.btn-green:hover { opacity: 0.9; }
-.btn-orange { background: var(--orange); color: #1a1a2e; }
-.btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text2); }
-.btn-ghost:hover { border-color: var(--accent); color: var(--accent2); }
-.btn-whatsapp { background: #25D366; color: white; }
-.btn-whatsapp:hover { opacity: 0.9; }
-.btn-sm { padding: 7px 14px; font-size: 12px; border-radius: 8px; }
-.btn-block { width: 100%; margin-bottom: 8px; }
-
-/* FORMS */
-.form-group { margin-bottom: 16px; }
-.form-label { font-size: 13px; color: var(--text2); margin-bottom: 6px; display: block; font-weight: 500; }
-.form-input, .form-select {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  padding: 12px 14px;
-  font-size: 14px;
-  font-family: 'DM Sans', sans-serif;
-  transition: border-color 0.2s;
-  -webkit-appearance: none;
-}
-.form-input:focus, .form-select:focus {
-  outline: none; border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
-}
-.form-input::placeholder { color: var(--text3); }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-/* MODAL */
-.modal-overlay {
-  display: none; position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-  align-items: flex-end; justify-content: center;
-}
-.modal-overlay.active { display: flex; }
-.modal {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 24px 24px 0 0;
-  padding: 24px 20px;
-  width: 100%; max-width: 480px;
-  max-height: 90vh; overflow-y: auto;
-  animation: slideUp 0.3s ease;
-}
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
-.modal-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; }
-
-/* PAYMENT HISTORY */
-.payment-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 0; border-bottom: 1px solid var(--border);
-}
-.payment-item:last-child { border-bottom: none; }
-.payment-left { display: flex; flex-direction: column; gap: 2px; }
-.payment-month { font-size: 13px; font-weight: 600; }
-.payment-date { font-size: 11px; color: var(--text3); }
-.payment-right { text-align: right; }
-.payment-amount { font-size: 15px; font-weight: 700; color: var(--green); }
-.payment-balance { font-size: 11px; color: var(--red); margin-top: 2px; }
-
-/* DIVIDER */
-.divider { height: 1px; background: var(--border); margin: 16px 0; }
-
-/* SECTION TITLE */
-.section-title {
-  font-size: 18px; font-weight: 800;
-  margin-bottom: 16px; color: var(--text);
-}
-
-/* ALERT */
-.alert {
-  padding: 12px 14px; border-radius: var(--radius-sm);
-  font-size: 13px; margin-bottom: 14px;
-  display: flex; align-items: flex-start; gap: 10px;
-}
-.alert-info { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; }
-.alert-warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
-.alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
-
-/* UNIT INFO BOX */
-.unit-info {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-  margin-bottom: 14px;
-}
-.unit-info-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
-.unit-info-row span:first-child { color: var(--text2); }
-.unit-info-row span:last-child { font-weight: 600; }
-
-/* TOAST */
-.toast {
-  position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px 20px;
-  font-size: 14px; font-weight: 500;
-  z-index: 999; opacity: 0;
-  transition: all 0.3s; white-space: nowrap;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* EMPTY STATE */
-.empty-state {
-  text-align: center; padding: 48px 20px;
-  color: var(--text3);
-}
-.empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
-.empty-state p { font-size: 14px; }
-
-/* PROGRESS BAR */
-.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 8px; }
-.progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
-
-/* MONTH SELECTOR */
-.month-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 16px; }
-.month-tab {
-  flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
-  font-size: 12px; font-weight: 600; cursor: pointer;
-  border: 1px solid var(--border); background: var(--surface2); color: var(--text2);
-  transition: all 0.2s;
-}
-.month-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-/* FAB */
-.fab {
-  position: fixed; right: 20px; bottom: 90px;
-  width: 54px; height: 54px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border: none; color: white; font-size: 24px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; box-shadow: 0 4px 20px rgba(124,58,237,0.5);
-  transition: all 0.2s; z-index: 50;
-}
-.fab:hover { transform: scale(1.1); }
-
-/* EXPENSE ITEM */
-.expense-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 0; border-bottom: 1px solid var(--border);
-}
-.expense-item:last-child { border-bottom: none; }
-
-/* BACK BTN */
-.back-btn {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 14px; color: var(--text2);
-  cursor: pointer; margin-bottom: 20px;
-  background: none; border: none; padding: 0;
-}
-.back-btn:hover { color: var(--accent2); }
-
-/* BALANCE HIGHLIGHT */
-.balance-box {
-  background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(245,158,11,0.1));
-  border: 1px solid rgba(239,68,68,0.3);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-  text-align: center;
-  margin: 12px 0;
-}
-.balance-box .balance-label { font-size: 12px; color: var(--text3); margin-bottom: 4px; }
-.balance-box .balance-amount { font-size: 28px; font-weight: 800; color: var(--red); font-family: 'Syne', sans-serif; }
-
-.advance-box {
-  background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(59,130,246,0.1));
-  border: 1px solid rgba(16,185,129,0.3);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-  text-align: center;
-  margin: 12px 0;
-}
-.advance-box .advance-label { font-size: 12px; color: var(--text3); margin-bottom: 4px; }
-.advance-box .advance-amount { font-size: 24px; font-weight: 800; color: var(--green); font-family: 'Syne', sans-serif; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0e0e14;font-family:'Outfit','Segoe UI',sans-serif;color:#e8e8f0;}
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:#1a1a2e;}
+::-webkit-scrollbar-thumb{background:#3a3a4e;border-radius:4px;}
+a{color:inherit;}
 </style>
 </head>
 <body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useCallback,useRef} = React;
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <h1>🏠 Rent<span>Book</span></h1>
-  <div class="topbar-actions">
-    <button class="icon-btn" onclick="showSearch()" title="Search">🔍</button>
-    <button class="icon-btn" onclick="exportData()" title="Export">📤</button>
-  </div>
-</div>
+// ─── Constants ───────────────────────────────────────────────────────────────
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const COLORS  = ["#7b68ee","#00c896","#f5a623","#ff5e5e","#4ecdc4","#45b7d1","#96ceb4"];
+const STATUS_COLOR = {Paid:"#00c896",Partial:"#f5a623",Pending:"#ff5e5e",Advance:"#7b68ee"};
 
-<!-- PAGES -->
-<div id="page-overview" class="page active">
-  <div id="overview-content"></div>
-</div>
+const today   = new Date();
+const fmtDate = d => { const x=new Date(d); return `${x.getDate()} ${MONTHS[x.getMonth()]} ${x.getFullYear()}`; };
+const mkKey   = (y,m) => `${y}-${String(m+1).padStart(2,"0")}`;
+const ac      = id => COLORS[id % COLORS.length];
 
-<div id="page-rooms" class="page">
-  <div id="rooms-content"></div>
-</div>
+// ─── Status logic (FIXED) ────────────────────────────────────────────────────
+// paid    = amount tenant actually gave this month
+// payable = rent + elec + carryFwd
+// status:
+//   paid == 0              → Pending
+//   0 < paid < payable     → Partial  (baki = payable - paid)
+//   paid == payable        → Paid
+//   paid > payable         → Advance  (advance = paid - payable)  ← NOT added to rent
+function deriveStatus(paid, payable) {
+  if (paid <= 0)         return { status:"Pending",  baki: payable,         advance: 0 };
+  if (paid < payable)    return { status:"Partial",  baki: payable - paid,  advance: 0 };
+  if (paid === payable)  return { status:"Paid",      baki: 0,               advance: 0 };
+  /* paid > payable */   return { status:"Advance",  baki: 0,               advance: paid - payable };
+}
 
-<div id="page-payments" class="page">
-  <div id="payments-content"></div>
-</div>
+// ─── In-memory store ─────────────────────────────────────────────────────────
+let _tenants = [
+  {id:1,name:"Rahul Sharma",room:"101",rent:8000,phone:"9876543210",joinDate:"2024-01-01",baseReading:0},
+  {id:2,name:"Priya Singh", room:"102",rent:7500,phone:"9812345678",joinDate:"2024-03-01",baseReading:0},
+  {id:3,name:"Amit Kumar",  room:"201",rent:9000,phone:"9900112233",joinDate:"2023-11-01",baseReading:0},
+];
+let _records = {};   // key: `${tenantId}_${yk}`
+let _settings = {rate:8};
+let _nextId   = 4;
 
-<div id="page-expenses" class="page">
-  <div id="expenses-content"></div>
-</div>
+const getRec  = (tid,yk) => _records[`${tid}_${yk}`] || null;
+const saveRec = rec      => { _records[`${rec.tenantId}_${rec.monthKey}`] = rec; };
 
-<div id="page-tenants" class="page">
-  <div id="tenants-content"></div>
-</div>
+function buildRec(tenant, yk, prevReading, carryFwd) {
+  return {
+    tenantId:       tenant.id,
+    monthKey:       yk,
+    rent:           tenant.rent,
+    elecPrevReading: prevReading,
+    elecCurrReading: prevReading,
+    elecUnits:      0,
+    elecBill:       0,
+    // totalPayable = rent + elecBill + carryFwd  (advance is NOT added here)
+    totalPayable:   tenant.rent + carryFwd,
+    amountPaid:     0,
+    status:         "Pending",
+    baki:           tenant.rent + carryFwd,
+    advance:        0,
+    carryFwd:       carryFwd,   // positive = due from tenant, negative = advance credit
+    paymentDates:   [],
+  };
+}
 
-<!-- BOTTOM NAV -->
-<nav class="bottom-nav">
-  <button class="nav-item active" onclick="navigate('overview')">
-    <span class="nav-icon">📊</span>Overview
-  </button>
-  <button class="nav-item" onclick="navigate('rooms')">
-    <span class="nav-icon">🚪</span>Rooms
-  </button>
-  <button class="nav-item" onclick="navigate('payments')">
-    <span class="nav-icon">💳</span>Payments
-  </button>
-  <button class="nav-item" onclick="navigate('expenses')">
-    <span class="nav-icon">📋</span>Expenses
-  </button>
-  <button class="nav-item" onclick="navigate('tenants')">
-    <span class="nav-icon">👥</span>Tenants
-  </button>
-</nav>
+function ensureRec(tenantId, yk) {
+  if (getRec(tenantId, yk)) return getRec(tenantId, yk);
+  const tenant = _tenants.find(t => t.id === tenantId);
+  if (!tenant) return null;
 
-<!-- FAB -->
-<button class="fab" id="main-fab" onclick="handleFAB()">＋</button>
+  const [y,mo] = yk.split("-").map(Number);
+  const prevDate = new Date(y, mo-2, 1);
+  const prevYk   = mkKey(prevDate.getFullYear(), prevDate.getMonth());
+  const prev     = getRec(tenantId, prevYk);
 
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
+  // Previous meter reading: use prev month's currReading, else tenant's baseReading
+  const prevReading = prev ? prev.elecCurrReading : (tenant.baseReading || 0);
 
-<!-- MODALS -->
-<div id="modal-overlay" class="modal-overlay" onclick="closeModalOutside(event)">
-  <div class="modal" id="modal-content"></div>
-</div>
+  // Carry forward: positive = tenant owes, negative = advance credit to tenant
+  let carryFwd = 0;
+  if (prev) {
+    if (prev.status === "Advance")        carryFwd = -prev.advance;       // credit
+    else if (prev.baki > 0)              carryFwd = prev.baki;            // due
+  }
 
-<script>
-// ===================== DATA STORE =====================
-const DB = {
-  get: (k) => { try { return JSON.parse(localStorage.getItem('rb_'+k) || 'null'); } catch(e) { return null; } },
-  set: (k, v) => localStorage.setItem('rb_'+k, JSON.stringify(v)),
+  const rec = buildRec(tenant, yk, prevReading, carryFwd);
+  saveRec(rec);
+  return rec;
+}
+
+// Recalculate totalPayable & status after any change
+function recalc(rec) {
+  rec.totalPayable = rec.rent + rec.elecBill + rec.carryFwd;
+  const d = deriveStatus(rec.amountPaid, rec.totalPayable);
+  rec.status  = d.status;
+  rec.baki    = d.baki;
+  rec.advance = d.advance;
+  return rec;
+}
+
+// ─── App ─────────────────────────────────────────────────────────────────────
+export default function App() {
+  const [tenants,   setTenants]   = useState([..._tenants]);
+  const [settings,  setSettings]  = useState({..._settings});
+  const [tab,       setTab]       = useState("dashboard");
+  const [viewMonth, setViewMonth] = useState({y:today.getFullYear(), m:today.getMonth()});
+  const [modal,     setModal]     = useState(null);
+  const [toast,     setToast]     = useState(null);
+  const [, forceUpdate]           = useState(0);
+  const refresh = () => forceUpdate(n => n+1);
+
+  const showToast = (msg, type="ok") => {
+    setToast({msg,type});
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  // Ensure records exist for current view month
+  useEffect(() => {
+    _tenants.forEach(t => ensureRec(t.id, mkKey(viewMonth.y, viewMonth.m)));
+    refresh();
+  }, [viewMonth, tenants]);
+
+  const yk      = mkKey(viewMonth.y, viewMonth.m);
+  const records = _tenants.map(t => getRec(t.id,yk) || ensureRec(t.id,yk));
+
+  // ── Handlers ──
+  const doPayment = (tenantId, amount, yk) => {
+    const rec = getRec(tenantId,yk) || ensureRec(tenantId,yk);
+    rec.amountPaid = Number(amount);
+    recalc(rec);
+    rec.paymentDates = [...rec.paymentDates, {date:new Date().toISOString(), amount:Number(amount)}];
+    saveRec(rec);
+    refresh();
+    showToast(`Payment saved! Status: ${rec.status}`);
+  };
+
+  const doElec = (tenantId, currReading, yk) => {
+    const rec   = getRec(tenantId,yk) || ensureRec(tenantId,yk);
+    const curr  = Number(currReading);
+    const units = Math.max(0, curr - rec.elecPrevReading);
+    rec.elecCurrReading = curr;
+    rec.elecUnits       = units;
+    rec.elecBill        = units * _settings.rate;
+    recalc(rec);
+    saveRec(rec);
+    refresh();
+    showToast("Electricity updated!");
+  };
+
+  const doAddTenant = data => {
+    const t = {id:_nextId++, ...data, baseReading: Number(data.baseReading||0)};
+    _tenants = [..._tenants, t];
+    setTenants([..._tenants]);
+    showToast("Tenant added! ✅");
+  };
+
+  const doEditTenant = (id, data) => {
+    _tenants = _tenants.map(t => t.id===id ? {...t,...data, rent:Number(data.rent), baseReading:Number(data.baseReading||0)} : t);
+    // update rent in existing records
+    Object.values(_records).forEach(r => {
+      if (r.tenantId === id) { r.rent = Number(data.rent); recalc(r); }
+    });
+    setTenants([..._tenants]);
+    showToast("Tenant updated! ✅");
+  };
+
+  const doDeleteTenant = id => {
+    _tenants = _tenants.filter(t => t.id !== id);
+    setTenants([..._tenants]);
+    showToast("Tenant removed", "err");
+  };
+
+  const doSaveSettings = s => {
+    _settings = {...s};
+    setSettings({..._settings});
+    showToast("Settings saved!");
+  };
+
+  const prevMonth = () => setViewMonth(({y,m}) => m===0 ? {y:y-1,m:11} : {y,m:m-1});
+  const nextMonth = () => setViewMonth(({y,m}) => m===11 ? {y:y+1,m:0} : {y,m:m+1});
+
+  const totalPayable   = records.reduce((s,r)=>s+(r?.totalPayable||0),0);
+  const totalCollected = records.reduce((s,r)=>s+Math.min(r?.amountPaid||0, r?.totalPayable||0),0);
+  const totalPending   = records.reduce((s,r)=>s+(r?.baki||0),0);
+  const totalAdvance   = records.reduce((s,r)=>s+(r?.advance||0),0);
+
+  return (
+    <div style={S.app}>
+      {/* Header */}
+      <header style={S.header}>
+        <div style={S.logo}>
+          <span style={{fontSize:22}}>🏠</span>
+          <span style={S.logoTxt}>RentBook</span>
+          <span style={S.logoBadge}>Pro</span>
+        </div>
+        <nav style={S.nav}>
+          {[{id:"dashboard",icon:"📊",lbl:"Home"},{id:"tenants",icon:"👥",lbl:"Tenants"},
+            {id:"payments",icon:"💳",lbl:"Pay"},{id:"history",icon:"📋",lbl:"History"},
+            {id:"settings",icon:"⚙️",lbl:"Settings"}].map(t=>(
+            <button key={t.id} style={{...S.navBtn,...(tab===t.id?S.navOn:{})}} onClick={()=>setTab(t.id)}>
+              <span>{t.icon}</span><span style={S.navLbl}>{t.lbl}</span>
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      {/* Month bar */}
+      {["dashboard","payments","history"].includes(tab) && (
+        <div style={S.mbar}>
+          <button style={S.mBtn} onClick={prevMonth}>‹</button>
+          <span style={S.mTitle}>{MONTHS[viewMonth.m]} {viewMonth.y}</span>
+          <button style={S.mBtn} onClick={nextMonth}>›</button>
+        </div>
+      )}
+
+      <main style={S.main}>
+        {tab==="dashboard" && <Dashboard tenants={tenants} records={records} tp={totalPayable} tc={totalCollected} tpend={totalPending} tadv={totalAdvance}/>}
+        {tab==="tenants"   && <Tenants tenants={tenants} onAdd={()=>setModal({t:"add"})} onEdit={t=>setModal({t:"edit",data:t})} onDelete={doDeleteTenant}/>}
+        {tab==="payments"  && <Payments tenants={tenants} records={records} yk={yk} settings={settings} viewMonth={viewMonth} onPayment={doPayment} onElec={doElec}/>}
+        {tab==="history"   && <History tenants={tenants} viewMonth={viewMonth}/>}
+        {tab==="settings"  && <Settings settings={settings} onSave={doSaveSettings}/>}
+      </main>
+
+      {modal?.t==="add"  && <TenantModal mode="add" onClose={()=>setModal(null)} onSave={d=>{doAddTenant(d);setModal(null);}}/>}
+      {modal?.t==="edit" && <TenantModal mode="edit" existing={modal.data} onClose={()=>setModal(null)} onSave={d=>{doEditTenant(modal.data.id,d);setModal(null);}}/>}
+
+      {toast && <div style={{...S.toast,background:toast.type==="err"?"#ff5e5e":"#00c896"}}>{toast.msg}</div>}
+    </div>
+  );
+}
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+function Dashboard({tenants,records,tp,tc,tpend,tadv}){
+  const pct = tp>0 ? Math.round((tc/tp)*100) : 0;
+  return (
+    <div>
+      <div style={S.grid2}>
+        <Card label="Expected"  value={`₹${tp.toLocaleString()}`}    color="#7b68ee" icon="📈"/>
+        <Card label="Collected" value={`₹${tc.toLocaleString()}`}    color="#00c896" icon="✅"/>
+        <Card label="Pending"   value={`₹${tpend.toLocaleString()}`} color="#ff5e5e" icon="⏳"/>
+        <Card label="Advance"   value={`₹${tadv.toLocaleString()}`}  color="#f5a623" icon="🔄"/>
+      </div>
+      <div style={S.box}>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:13,marginBottom:8}}>
+          <span>Collection Progress</span>
+          <span style={{fontWeight:700,color:"#00c896"}}>{pct}%</span>
+        </div>
+        <div style={S.pBar}><div style={{...S.pFill,width:`${pct}%`}}/></div>
+      </div>
+      <div style={S.secTitle}>Tenant Status</div>
+      {tenants.map((t,i)=>{
+        const r=records[i]; if(!r) return null;
+        return (
+          <div key={t.id} style={S.tCard}>
+            <div style={S.tLeft}>
+              <div style={{...S.avatar,background:ac(t.id)}}>{t.name[0]}</div>
+              <div>
+                <div style={S.tName}>{t.name}</div>
+                <div style={S.tSub}>Room {t.room}</div>
+              </div>
+            </div>
+            <div style={S.tRight}>
+              <div style={{...S.badge,background:STATUS_COLOR[r.status]+"22",color:STATUS_COLOR[r.status]}}>{r.status}</div>
+              <div style={S.tSub}>₹{r.amountPaid.toLocaleString()} / ₹{r.totalPayable.toLocaleString()}</div>
+              {r.baki>0    && <div style={S.redTag}>Baki ₹{r.baki.toLocaleString()}</div>}
+              {r.advance>0 && <div style={S.advTag}>+₹{r.advance.toLocaleString()} advance</div>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+function Card({label,value,color,icon}){
+  return <div style={{...S.statCard,borderTop:`3px solid ${color}`}}>
+    <div style={{fontSize:20}}>{icon}</div>
+    <div style={{fontWeight:800,fontSize:17,color}}>{value}</div>
+    <div style={{fontSize:11,color:"#888"}}>{label}</div>
+  </div>;
+}
+
+// ─── Tenants ──────────────────────────────────────────────────────────────────
+function Tenants({tenants,onAdd,onEdit,onDelete}){
+  return (
+    <div>
+      <div style={S.row}>
+        <div style={S.secTitle}>All Tenants ({tenants.length})</div>
+        <button style={S.addBtn} onClick={onAdd}>+ Add</button>
+      </div>
+      {tenants.length===0 && <div style={S.empty}>Koi tenant nahi. "+ Add" se add karo.</div>}
+      {tenants.map(t=>(
+        <div key={t.id} style={S.tCard}>
+          <div style={S.tLeft}>
+            <div style={{...S.avatar,background:ac(t.id)}}>{t.name[0]}</div>
+            <div>
+              <div style={S.tName}>{t.name}</div>
+              <div style={S.tSub}>Room {t.room} · ₹{Number(t.rent).toLocaleString()}/mo</div>
+              <div style={{fontSize:11,color:"#666",marginTop:2}}>📞 {t.phone}</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:6}}>
+            <button style={S.editBtn} onClick={()=>onEdit(t)}>✏️</button>
+            <button style={S.delBtn}  onClick={()=>{if(window.confirm(`${t.name} delete karo?`)) onDelete(t.id);}}>🗑️</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Payments ─────────────────────────────────────────────────────────────────
+function Payments({tenants,records,yk,settings,viewMonth,onPayment,onElec}){
+  const [active,  setActive]   = useState(null);
+  const [payVal,  setPayVal]   = useState("");
+  const [elecVal, setElecVal]  = useState("");
+
+  const tenant = tenants.find(t=>t.id===active);
+  const rec    = records.find(r=>r?.tenantId===active);
+
+  const monthLabel = MONTHS[viewMonth.m]+" "+viewMonth.y;
+
+  // WhatsApp reminder
+  const sendWA = () => {
+    if(!tenant||!rec) return;
+    const phone = "91"+tenant.phone.replace(/\D/g,"").slice(-10);
+    let msg = "";
+    if(rec.status==="Pending"){
+      msg = `Namaskar ${tenant.name} ji 🙏\n\n${monthLabel} ka kiraya pending hai.\n\n💰 Total: ₹${rec.totalPayable.toLocaleString()}\n\nKripya jald payment kar dijiye.\nShukriya 🙏`;
+    } else if(rec.status==="Partial"){
+      msg = `Namaskar ${tenant.name} ji 🙏\n\n${monthLabel} ka kiraya aadha baki hai.\n\n✅ Diya: ₹${rec.amountPaid.toLocaleString()}\n⏳ Baki: ₹${rec.baki.toLocaleString()}\n💰 Total: ₹${rec.totalPayable.toLocaleString()}\n\nKripya baki payment kar dijiye.\nShukriya 🙏`;
+    }
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`,"_blank");
+  };
+
+  return (
+    <div>
+      {/* Tenant selector tabs */}
+      <div style={S.tabs}>
+        {tenants.map(t=>(
+          <button key={t.id} style={{...S.tab,...(active===t.id?S.tabOn:{})}}
+            onClick={()=>{setActive(t.id);setPayVal("");setElecVal("");}}>
+            <div style={{...S.avatar,...S.avatarSm,background:ac(t.id)}}>{t.name[0]}</div>
+            <div style={{fontSize:11}}>{t.name.split(" ")[0]}</div>
+          </button>
+        ))}
+      </div>
+
+      {!active && <div style={S.empty}>👆 Upar se tenant select karo</div>}
+
+      {tenant && rec && (
+        <div>
+          {/* ── Summary card ── */}
+          <div style={S.box}>
+            <Row label="Base Rent" val={`₹${rec.rent.toLocaleString()}`}/>
+            <Row label={`Electricity (${rec.elecUnits} units × ₹${settings.rate})`} val={`₹${rec.elecBill.toLocaleString()}`}/>
+            {rec.carryFwd>0 && <Row label="Carry Forward (pichhla baki)" val={`+₹${rec.carryFwd.toLocaleString()}`} color="#ff5e5e"/>}
+            {rec.carryFwd<0 && <Row label="Advance Credit (pichhle se)" val={`-₹${Math.abs(rec.carryFwd).toLocaleString()}`} color="#00c896"/>}
+            <div style={S.divider}/>
+            <Row label="Total Payable" val={`₹${rec.totalPayable.toLocaleString()}`} bold/>
+            <Row label="Amount Paid"   val={`₹${rec.amountPaid.toLocaleString()}`}   color={STATUS_COLOR[rec.status]} bold/>
+
+            {/* Status + baki/advance info */}
+            <div style={{display:"flex",justifyContent:"center",marginTop:10,gap:10,flexWrap:"wrap",alignItems:"center"}}>
+              <div style={{...S.statusPill,background:STATUS_COLOR[rec.status]}}>{rec.status}</div>
+              {rec.baki>0    && <div style={S.bakiPill}>⏳ Baki: ₹{rec.baki.toLocaleString()}</div>}
+              {rec.advance>0 && <div style={S.advPill}>🔄 Advance: ₹{rec.advance.toLocaleString()}</div>}
+            </div>
+            {rec.advance>0 && <div style={S.infoNote}>Next month mein ₹{rec.advance.toLocaleString()} automatically adjust hoga</div>}
+          </div>
+
+          {/* ── Electricity ── */}
+          <div style={S.box}>
+            <div style={S.secLabel}>⚡ Electricity Reading</div>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+              <div style={S.elecBox}>
+                <div style={S.elecLbl}>Previous</div>
+                <div style={S.elecNum}>{rec.elecPrevReading}</div>
+              </div>
+              <div style={{color:"#7b68ee",fontSize:20,fontWeight:700}}>→</div>
+              <div style={{flex:1.5}}>
+                <div style={S.elecLbl}>Current Reading</div>
+                <input style={S.inp} type="number" placeholder="Meter reading dalo"
+                  value={elecVal} onChange={e=>setElecVal(e.target.value)}/>
+              </div>
+            </div>
+            {elecVal && Number(elecVal)>=rec.elecPrevReading && (
+              <div style={S.preview}>
+                {Number(elecVal)-rec.elecPrevReading} units × ₹{settings.rate} = ₹{(Number(elecVal)-rec.elecPrevReading)*settings.rate}
+              </div>
+            )}
+            {elecVal && Number(elecVal)<rec.elecPrevReading && (
+              <div style={{...S.preview,color:"#ff5e5e"}}>⚠️ Current reading previous se kam nahi ho sakta!</div>
+            )}
+            <button style={S.btn} onClick={()=>{
+              if(!elecVal||Number(elecVal)<rec.elecPrevReading) return;
+              onElec(tenant.id,elecVal,yk); setElecVal("");
+            }}>Update Electricity</button>
+          </div>
+
+          {/* ── Payment ── */}
+          <div style={S.box}>
+            <div style={S.secLabel}>💳 Payment Record karo</div>
+            <input style={S.inp} type="number"
+              placeholder={`Kitne diye? (Total: ₹${rec.totalPayable})`}
+              value={payVal} onChange={e=>setPayVal(e.target.value)}/>
+
+            {/* Live preview of what status will be */}
+            {payVal && (() => {
+              const p   = Number(payVal);
+              const tot = rec.totalPayable;
+              const d   = deriveStatus(p, tot);
+              return (
+                <div style={{marginTop:8}}>
+                  <div style={{...S.preview,color:STATUS_COLOR[d.status]}}>
+                    → Status: <b>{d.status}</b>
+                    {d.status==="Partial"  && `  |  Baki: ₹${d.baki.toLocaleString()}`}
+                    {d.status==="Advance"  && `  |  Advance: ₹${d.advance.toLocaleString()}`}
+                    {d.status==="Pending"  && `  |  Poora ₹${tot.toLocaleString()} baki`}
+                  </div>
+                </div>
+              );
+            })()}
+
+            <button style={{...S.btn,background:"#00c896",marginTop:10}} onClick={()=>{
+              if(!payVal) return;
+              onPayment(tenant.id,payVal,yk); setPayVal("");
+            }}>💾 Save Payment</button>
+          </div>
+
+          {/* ── WhatsApp Reminder ── */}
+          {(rec.status==="Pending"||rec.status==="Partial") && tenant.phone && (
+            <button onClick={sendWA} style={S.waBtn}>
+              <span style={{fontSize:22}}>💬</span>
+              <div style={{textAlign:"left"}}>
+                <div style={{fontWeight:700,fontSize:14}}>WhatsApp Reminder Bhejo</div>
+                <div style={{fontSize:11,opacity:0.85}}>
+                  {rec.status==="Pending"
+                    ? `Poora ₹${rec.totalPayable.toLocaleString()} pending`
+                    : `₹${rec.baki.toLocaleString()} baki hai`}
+                  {" · "}{tenant.name}
+                </div>
+              </div>
+              <span style={{marginLeft:"auto",fontSize:18}}>→</span>
+            </button>
+          )}
+
+          {/* ── This month payment log ── */}
+          {rec.paymentDates.length>0 && (
+            <div style={S.box}>
+              <div style={S.secLabel}>📝 Is mahine ke payments</div>
+              {rec.paymentDates.map((p,i)=>(
+                <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid #1e1e2e",fontSize:13}}>
+                  <span style={{color:"#888"}}>{fmtDate(p.date)}</span>
+                  <span style={{color:"#00c896",fontWeight:600}}>₹{p.amount.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Row({label,val,color,bold}){
+  return <div style={{display:"flex",justifyContent:"space-between",fontSize:14,padding:"4px 0",fontWeight:bold?700:400}}>
+    <span style={{color:"#aaa"}}>{label}</span>
+    <span style={{color:color||"#e8e8f0"}}>{val}</span>
+  </div>;
+}
+
+// ─── History ──────────────────────────────────────────────────────────────────
+function History({tenants,viewMonth}){
+  const [filter,setFilter] = useState("all");
+  let {y,m} = viewMonth;
+  const months = [];
+  for(let i=0;i<6;i++){
+    months.push(mkKey(y,m));
+    if(m===0){y--;m=11;}else m--;
+  }
+  const list = filter==="all" ? tenants : tenants.filter(t=>t.id===Number(filter));
+  return (
+    <div>
+      <div style={S.row}>
+        <div style={S.secTitle}>History</div>
+        <select style={S.sel} value={filter} onChange={e=>setFilter(e.target.value)}>
+          <option value="all">Sabhi</option>
+          {tenants.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+        </select>
+      </div>
+      {list.map(t=>(
+        <div key={t.id} style={{...S.box,marginBottom:12}}>
+          <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+            <div style={{...S.avatar,background:ac(t.id)}}>{t.name[0]}</div>
+            <div>
+              <div style={{fontWeight:700}}>{t.name}</div>
+              <div style={S.tSub}>Room {t.room}</div>
+            </div>
+          </div>
+          <div style={{fontSize:13}}>
+            <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",color:"#555",fontWeight:700,fontSize:11,marginBottom:6,paddingBottom:6,borderBottom:"1px solid #2a2a3e"}}>
+              <span>Month</span><span>Payable</span><span>Paid</span><span>Status</span>
+            </div>
+            {months.map(mk=>{
+              const r = getRec(t.id,mk);
+              const [yr,mo] = mk.split("-");
+              const lbl = MONTHS[parseInt(mo)-1]+" "+yr;
+              if(!r) return <div key={mk} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"4px 0",borderBottom:"1px solid #1a1a2e",color:"#444"}}>
+                <span>{lbl}</span><span>—</span><span>—</span><span>—</span></div>;
+              return <div key={mk} style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"4px 0",borderBottom:"1px solid #1a1a2e"}}>
+                <span>{lbl}</span>
+                <span>₹{r.totalPayable.toLocaleString()}</span>
+                <span>₹{r.amountPaid.toLocaleString()}</span>
+                <span style={{color:STATUS_COLOR[r.status],fontWeight:600}}>{r.status}</span>
+              </div>;
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Settings ─────────────────────────────────────────────────────────────────
+function Settings({settings,onSave}){
+  const [rate,setRate] = useState(settings.rate);
+  return (
+    <div>
+      <div style={S.secTitle}>Settings</div>
+      <div style={S.box}>
+        <div style={S.secLabel}>⚡ Electricity Rate (₹ per unit)</div>
+        <input style={{...S.inp,marginTop:8}} type="number" value={rate} onChange={e=>setRate(e.target.value)}/>
+        <div style={{fontSize:12,color:"#666",marginTop:6}}>Current: ₹{settings.rate}/unit</div>
+        <button style={{...S.btn,marginTop:12}} onClick={()=>onSave({rate:Number(rate)})}>Save</button>
+      </div>
+      <div style={S.box}>
+        <div style={S.secLabel}>ℹ️ How it works</div>
+        <div style={{fontSize:13,color:"#666",lineHeight:2}}>
+          <div>✅ Partial pay → baki clearly dikhega</div>
+          <div>✅ Extra diya → Advance (rent mein nahi jayega)</div>
+          <div>✅ Advance → next month mein auto credit</div>
+          <div>✅ Pending → next month mein carry forward</div>
+          <div>✅ Electricity: curr - prev = units used</div>
+          <div>✅ WhatsApp reminder: Pending/Partial pe</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Tenant Modal ─────────────────────────────────────────────────────────────
+function TenantModal({mode,existing,onClose,onSave}){
+  const isEdit = mode==="edit";
+  const [form,setForm] = useState(existing
+    ? {name:existing.name,room:existing.room,rent:existing.rent,phone:existing.phone,joinDate:existing.joinDate,baseReading:existing.baseReading||0}
+    : {name:"",room:"",rent:"",phone:"",joinDate:new Date().toISOString().split("T")[0],baseReading:0}
+  );
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  return (
+    <div style={S.overlay} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div style={S.modal}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <span style={{fontWeight:700,fontSize:16}}>{isEdit?"✏️ Edit Tenant":"➕ New Tenant"}</span>
+          <button style={S.closeBtn} onClick={onClose}>✕</button>
+        </div>
+        {[
+          {k:"name",      lbl:"👤 Full Name",            ph:"Tenant ka naam"},
+          {k:"room",      lbl:"🚪 Room No.",              ph:"e.g. 101"},
+          {k:"rent",      lbl:"💰 Monthly Rent (₹)",     ph:"e.g. 8000", type:"number"},
+          {k:"phone",     lbl:"📞 Phone (WhatsApp)",      ph:"10-digit number"},
+          {k:"joinDate",  lbl:"📅 Join Date",             type:"date"},
+          {k:"baseReading",lbl:"⚡ Meter Reading at Join",ph:"e.g. 1250", type:"number"},
+        ].map(f=>(
+          <div key={f.k} style={{marginBottom:12}}>
+            <div style={{fontSize:12,color:"#888",marginBottom:4}}>{f.lbl}</div>
+            <input style={S.inp} type={f.type||"text"} placeholder={f.ph} value={form[f.k]} onChange={e=>set(f.k,e.target.value)}/>
+          </div>
+        ))}
+        {!isEdit && <div style={{fontSize:12,color:"#7b68ee",background:"#7b68ee11",padding:"8px 10px",borderRadius:8,marginBottom:10}}>
+          💡 Meter Reading at Join = jab tenant aaya tab meter pe jo number tha. Yahi pehle month ki "Previous Reading" banega.
+        </div>}
+        <button style={{...S.btn,marginTop:4}} onClick={()=>{
+          if(!form.name||!form.room||!form.rent) return alert("Naam, Room aur Rent zaroori hai!");
+          onSave({...form,rent:Number(form.rent),baseReading:Number(form.baseReading||0)});
+        }}>{isEdit?"💾 Update":"✅ Add Tenant"}</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+const S = {
+  app:      {fontFamily:"'Outfit','Segoe UI',sans-serif",background:"#0e0e14",minHeight:"100vh",color:"#e8e8f0",paddingBottom:72},
+  header:   {background:"linear-gradient(135deg,#1a1a2e,#16213e)",borderBottom:"1px solid #2a2a3e",padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:100},
+  logo:     {display:"flex",alignItems:"center",gap:8},
+  logoTxt:  {fontWeight:800,fontSize:18,background:"linear-gradient(135deg,#7b68ee,#00c896)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"},
+  logoBadge:{background:"#7b68ee22",color:"#7b68ee",fontSize:10,padding:"2px 6px",borderRadius:4,fontWeight:700},
+  nav:      {display:"flex",gap:2},
+  navBtn:   {background:"none",border:"none",color:"#666",cursor:"pointer",padding:"6px 7px",borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",gap:2,fontSize:15},
+  navOn:    {background:"#7b68ee22",color:"#7b68ee"},
+  navLbl:   {fontSize:9,fontWeight:600},
+  mbar:     {display:"flex",alignItems:"center",justifyContent:"center",gap:20,padding:"10px 0",background:"#12121c"},
+  mBtn:     {background:"#2a2a3e",border:"none",color:"#ccc",width:32,height:32,borderRadius:8,cursor:"pointer",fontSize:18},
+  mTitle:   {fontWeight:700,fontSize:16,minWidth:140,textAlign:"center"},
+  main:     {padding:"14px 12px",maxWidth:600,margin:"0 auto"},
+  grid2:    {display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12},
+  statCard: {background:"#1a1a2e",borderRadius:12,padding:"12px",display:"flex",flexDirection:"column",gap:4},
+  box:      {background:"#1a1a2e",borderRadius:14,padding:"14px",marginBottom:12},
+  pBar:     {background:"#2a2a3e",borderRadius:99,height:8,overflow:"hidden"},
+  pFill:    {background:"linear-gradient(90deg,#7b68ee,#00c896)",height:"100%",borderRadius:99,transition:"width 0.5s"},
+  secTitle: {fontWeight:700,fontSize:15,marginBottom:12,color:"#c8c8e8"},
+  secLabel: {fontWeight:700,fontSize:13,marginBottom:10,color:"#888"},
+  row:      {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14},
+  tCard:    {background:"#1a1a2e",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10},
+  tLeft:    {display:"flex",alignItems:"center",gap:10},
+  tRight:   {display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4},
+  tName:    {fontWeight:600,fontSize:14},
+  tSub:     {fontSize:12,color:"#888"},
+  avatar:   {width:40,height:40,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:16,color:"#fff",flexShrink:0},
+  avatarSm: {width:30,height:30,fontSize:12,borderRadius:8},
+  badge:    {fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:6},
+  bakiPill: {background:"#ff5e5e22",color:"#ff5e5e",fontWeight:700,padding:"4px 10px",borderRadius:20,fontSize:12},
+  advPill:  {background:"#7b68ee22",color:"#7b68ee",fontWeight:700,padding:"4px 10px",borderRadius:20,fontSize:12},
+  redTag:   {fontSize:10,color:"#ff5e5e",background:"#ff5e5e22",padding:"1px 6px",borderRadius:4},
+  advTag:   {fontSize:10,color:"#7b68ee",background:"#7b68ee22",padding:"1px 6px",borderRadius:4},
+  divider:  {borderTop:"1px solid #2a2a3e",margin:"8px 0"},
+  statusPill:{color:"#fff",fontWeight:800,padding:"5px 18px",borderRadius:20,fontSize:14},
+  infoNote: {marginTop:8,fontSize:12,color:"#7b68ee",background:"#7b68ee11",padding:"6px 10px",borderRadius:8,textAlign:"center"},
+  tabs:     {display:"flex",gap:8,overflowX:"auto",paddingBottom:4,marginBottom:14},
+  tab:      {background:"#1a1a2e",border:"2px solid transparent",borderRadius:10,padding:"7px 10px",cursor:"pointer",color:"#666",display:"flex",flexDirection:"column",alignItems:"center",gap:3,minWidth:60,flexShrink:0},
+  tabOn:    {borderColor:"#7b68ee",color:"#e8e8f0"},
+  elecBox:  {background:"#12121c",borderRadius:10,padding:"10px 12px",flex:1,textAlign:"center"},
+  elecLbl:  {fontSize:11,color:"#888",marginBottom:3},
+  elecNum:  {fontWeight:700,fontSize:18,color:"#7b68ee"},
+  preview:  {fontSize:12,color:"#7b68ee",background:"#7b68ee11",padding:"6px 10px",borderRadius:8},
+  inp:      {background:"#12121c",border:"1px solid #2a2a3e",borderRadius:10,padding:"10px 12px",color:"#e8e8f0",fontSize:14,width:"100%",outline:"none"},
+  btn:      {background:"linear-gradient(135deg,#7b68ee,#5a4fcf)",border:"none",color:"#fff",padding:"11px",borderRadius:10,fontWeight:700,cursor:"pointer",fontSize:14,width:"100%",marginTop:8},
+  waBtn:    {width:"100%",background:"linear-gradient(135deg,#25d366,#128c7e)",border:"none",borderRadius:14,padding:"14px 16px",display:"flex",alignItems:"center",gap:12,marginBottom:12,color:"#fff",cursor:"pointer",boxShadow:"0 4px 15px rgba(37,211,102,0.3)"},
+  addBtn:   {background:"linear-gradient(135deg,#7b68ee,#5a4fcf)",border:"none",color:"#fff",padding:"8px 14px",borderRadius:10,fontWeight:700,cursor:"pointer",fontSize:13},
+  editBtn:  {background:"#7b68ee22",border:"none",color:"#7b68ee",padding:"6px 10px",borderRadius:8,cursor:"pointer",fontSize:13},
+  delBtn:   {background:"#ff5e5e22",border:"none",color:"#ff5e5e",padding:"6px 10px",borderRadius:8,cursor:"pointer",fontSize:13},
+  sel:      {background:"#1a1a2e",border:"1px solid #2a2a3e",borderRadius:8,padding:"6px 10px",color:"#e8e8f0",fontSize:13},
+  overlay:  {position:"fixed",inset:0,background:"rgba(0,0,0,0.75)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:200},
+  modal:    {background:"#1a1a2e",borderRadius:"20px 20px 0 0",padding:"20px 16px 36px",width:"100%",maxWidth:480,maxHeight:"90vh",overflowY:"auto"},
+  closeBtn: {background:"#2a2a3e",border:"none",color:"#ccc",width:28,height:28,borderRadius:8,cursor:"pointer",fontSize:14},
+  toast:    {position:"fixed",bottom:24,left:"50%",transform:"translateX(-50%)",color:"#fff",fontWeight:700,fontSize:13,padding:"10px 22px",borderRadius:20,zIndex:300,boxShadow:"0 4px 20px rgba(0,0,0,0.5)",whiteSpace:"nowrap"},
+  empty:    {textAlign:"center",padding:40,color:"#555",fontSize:14},
 };
 
-function getData() {
-  return DB.get('data') || {
-    tenants: [],
-    payments: [],
-    expenses: [],
-    settings: { rentPerUnit: 8, currency: '₹', propertyName: 'My Property' }
-  };
-}
-function saveData(d) { DB.set('data', d); }
-
-// ===================== NAVIGATION =====================
-let currentPage = 'overview';
-function navigate(page) {
-  currentPage = page;
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-'+page).classList.add('active');
-  const navItems = document.querySelectorAll('.nav-item');
-  const pageOrder = ['overview','rooms','payments','expenses','tenants'];
-  navItems[pageOrder.indexOf(page)].classList.add('active');
-  renderPage(page);
-}
-
-function renderPage(page) {
-  if (page === 'overview') renderOverview();
-  else if (page === 'rooms') renderRooms();
-  else if (page === 'payments') renderPayments();
-  else if (page === 'expenses') renderExpenses();
-  else if (page === 'tenants') renderTenants();
-}
-
-// ===================== HELPERS =====================
-function fmt(n) {
-  const d = getData();
-  return d.settings.currency + Number(n||0).toLocaleString('en-IN');
-}
-function fmtDate(s) {
-  if (!s) return '-';
-  const d = new Date(s);
-  return d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
-}
-function monthName(m) {
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  if (!m) return '';
-  const [y,mo] = m.split('-');
-  return months[parseInt(mo)-1] + ' ' + y;
-}
-function currentMonth() {
-  const n = new Date();
-  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}`;
-}
-function initials(name) {
-  if (!name) return '?';
-  return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-}
-function showToast(msg, dur=2500) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), dur);
-}
-function handleFAB() {
-  if (currentPage === 'tenants') showAddTenantModal();
-  else if (currentPage === 'rooms') showAddTenantModal();
-  else if (currentPage === 'payments') showAddPaymentModal();
-  else if (currentPage === 'expenses') showAddExpenseModal();
-  else showAddTenantModal();
-}
-
-// ===================== MODAL =====================
-function openModal(html) {
-  document.getElementById('modal-content').innerHTML = html;
-  document.getElementById('modal-overlay').classList.add('active');
-}
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('active');
-}
-function closeModalOutside(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
-}
-
-// ===================== OVERVIEW =====================
-function renderOverview() {
-  const d = getData();
-  const tenants = d.tenants.filter(t => t.active !== false);
-  const cm = currentMonth();
-
-  let totalRent = 0, totalCollected = 0, totalPending = 0, totalBalance = 0;
-  let pendingTenants = [], partialTenants = [];
-
-  tenants.forEach(t => {
-    const due = calcDue(t, cm, d);
-    const paid = getMonthPaid(t.id, cm, d);
-    const balance = getBalance(t.id, d); // cumulative balance
-
-    if (due.totalDue > 0) {
-      totalRent += due.totalDue;
-      if (paid >= due.totalDue) {
-        totalCollected += due.totalDue;
-      } else {
-        totalCollected += paid;
-        const remaining = due.totalDue - paid;
-        totalPending += remaining;
-        if (paid > 0) partialTenants.push({t, due, paid, remaining});
-        else pendingTenants.push({t, due, paid, remaining});
-      }
-    }
-    if (balance < 0) totalBalance += balance;
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/RentBook/sw.js').catch(()=>{});
   });
-
-  let html = `
-  <div style="margin-bottom:20px">
-    <div style="font-size:24px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:4px">${d.settings.propertyName}</div>
-    <div style="color:var(--text2);font-size:13px">${tenants.length} Active Tenants • ${monthName(cm)}</div>
-  </div>
-
-  <div class="stat-grid">
-    <div class="stat-box">
-      <div class="stat-label">Total Rent</div>
-      <div class="stat-value purple">${fmt(totalRent)}</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">Collected</div>
-      <div class="stat-value green">${fmt(totalCollected)}</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">Pending</div>
-      <div class="stat-value red">${fmt(totalPending)}</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-label">Tenants</div>
-      <div class="stat-value">${tenants.length}</div>
-    </div>
-  </div>`;
-
-  if (pendingTenants.length > 0 || partialTenants.length > 0) {
-    html += `<div class="section-title" style="font-size:16px;margin-top:8px">⚠️ Needs Attention</div>`;
-  }
-
-  [...partialTenants, ...pendingTenants].forEach(({t, due, paid, remaining}) => {
-    const isPartial = paid > 0;
-    html += `
-    <div class="card" style="cursor:pointer" onclick="showTenantDetail('${t.id}')">
-      <div class="tenant-header">
-        <div class="tenant-avatar">${initials(t.name)}</div>
-        <div style="flex:1">
-          <div class="tenant-name">${t.name}</div>
-          <div class="tenant-room">Room ${t.room}</div>
-        </div>
-        <span class="badge ${isPartial ? 'badge-orange' : 'badge-red'}">${isPartial ? 'Partial' : 'Pending'}</span>
-      </div>
-      <div class="amount-row">
-        <span class="amount-label">Total Due</span>
-        <span class="amount-val">${fmt(due.totalDue)}</span>
-      </div>
-      <div class="amount-row">
-        <span class="amount-label">Paid</span>
-        <span class="amount-val" style="color:var(--green)">${fmt(paid)}</span>
-      </div>
-      <div class="amount-row" style="background:rgba(239,68,68,0.05);border-radius:8px;padding:8px;margin-top:6px;border:1px solid rgba(239,68,68,0.2)">
-        <span class="amount-label" style="color:var(--red);font-weight:600">⚡ Baki Bacha</span>
-        <span class="amount-val" style="color:var(--red);font-size:16px">${fmt(remaining)}</span>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:12px">
-        <button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();quickPay('${t.id}')">💰 Pay Now</button>
-        <button class="btn btn-whatsapp btn-sm" onclick="event.stopPropagation();sendWhatsApp('${t.id}','${cm}')">📱 WA Remind</button>
-      </div>
-    </div>`;
-  });
-
-  document.getElementById('overview-content').innerHTML = html;
 }
-
-// ===================== CALC DUE =====================
-// Calculate total due for a tenant for a given month
-function calcDue(tenant, month, d) {
-  const settings = d.settings;
-  const rentAmt = tenant.rentAmount || 0;
-
-  // Electricity calculation
-  let electricityAmt = 0;
-  let elecDetails = null;
-
-  if (tenant.electricityEnabled) {
-    const ratePerUnit = tenant.rentPerUnit || settings.rentPerUnit || 8;
-    const readings = tenant.readings || [];
-    // Find readings for this month
-    const monthReading = readings.find(r => r.month === month);
-    if (monthReading && monthReading.prevReading !== undefined && monthReading.currReading !== undefined) {
-      const unitsUsed = Math.max(0, monthReading.currReading - monthReading.prevReading);
-      electricityAmt = unitsUsed * ratePerUnit;
-      elecDetails = { prev: monthReading.prevReading, curr: monthReading.currReading, units: unitsUsed, rate: ratePerUnit, amount: electricityAmt };
-    }
-  }
-
-  const totalDue = rentAmt + electricityAmt;
-  return { rentAmt, electricityAmt, totalDue, elecDetails };
-}
-
-// Get total paid for a specific month (only payments marked for this month)
-function getMonthPaid(tenantId, month, d) {
-  return (d.payments || [])
-    .filter(p => p.tenantId === tenantId && p.month === month)
-    .reduce((s, p) => s + (p.amount || 0), 0);
-}
-
-// Get cumulative balance for a tenant (advance - pending across all months)
-// Positive = advance (tenant paid extra), Negative = tenant owes more
-function getBalance(tenantId, d) {
-  const tenant = d.tenants.find(t => t.id === tenantId);
-  if (!tenant) return 0;
-
-  const allPayments = (d.payments || []).filter(p => p.tenantId === tenantId);
-  const totalPaidAll = allPayments.reduce((s, p) => s + (p.amount || 0), 0);
-
-  // Get all months that have payments or readings
-  const months = new Set();
-  allPayments.forEach(p => { if (p.month) months.add(p.month); });
-
-  let totalDueAll = 0;
-  months.forEach(month => {
-    const due = calcDue(tenant, month, d);
-    totalDueAll += due.totalDue;
-  });
-
-  return totalPaidAll - totalDueAll; // positive = advance, negative = still owes
-}
-
-// ===================== ROOMS PAGE =====================
-function renderRooms() {
-  const d = getData();
-  const tenants = d.tenants;
-  const cm = currentMonth();
-
-  let html = `<div class="section-title">All Tenants</div>`;
-
-  if (tenants.length === 0) {
-    html += `<div class="empty-state"><div class="empty-icon">🚪</div><p>No tenants added yet.<br>Tap ＋ to add first tenant.</p></div>`;
-  } else {
-    tenants.forEach(t => {
-      const due = calcDue(t, cm, d);
-      const paid = getMonthPaid(t.id, cm, d);
-      const balance = getBalance(t.id, d);
-      const remaining = Math.max(0, due.totalDue - paid);
-      const isActive = t.active !== false;
-
-      let statusBadge = '';
-      if (!isActive) statusBadge = `<span class="badge badge-purple">Inactive</span>`;
-      else if (due.totalDue === 0) statusBadge = `<span class="badge badge-blue">No Due</span>`;
-      else if (paid >= due.totalDue) statusBadge = `<span class="badge badge-green">Paid ✓</span>`;
-      else if (paid > 0) statusBadge = `<span class="badge badge-orange">Partial</span>`;
-      else statusBadge = `<span class="badge badge-red">Pending</span>`;
-
-      html += `
-      <div class="tenant-card" onclick="showTenantDetail('${t.id}')">
-        <div class="tenant-header">
-          <div class="tenant-avatar" style="${!isActive ? 'opacity:0.5' : ''}">${initials(t.name)}</div>
-          <div style="flex:1">
-            <div class="tenant-name">${t.name}</div>
-            <div class="tenant-room">Room ${t.room} • Since ${fmtDate(t.joinDate)}</div>
-          </div>
-          ${statusBadge}
-        </div>
-        <div class="amount-row">
-          <span class="amount-label">Monthly Rent</span>
-          <span class="amount-val">${fmt(t.rentAmount)}</span>
-        </div>
-        ${t.electricityEnabled ? `
-        <div class="amount-row">
-          <span class="amount-label">⚡ Electricity</span>
-          <span class="amount-val" style="color:var(--orange)">${due.elecDetails ? fmt(due.elecDetails.amount) : 'No reading'}</span>
-        </div>` : ''}
-        ${remaining > 0 ? `
-        <div class="amount-row" style="background:rgba(239,68,68,0.05);border-radius:8px;padding:8px;margin-top:4px">
-          <span class="amount-label" style="color:var(--red)">Baki Bacha</span>
-          <span class="amount-val" style="color:var(--red)">${fmt(remaining)}</span>
-        </div>` : ''}
-        ${balance > 0 ? `
-        <div class="amount-row" style="background:rgba(16,185,129,0.05);border-radius:8px;padding:8px;margin-top:4px">
-          <span class="amount-label" style="color:var(--green)">Advance</span>
-          <span class="amount-val" style="color:var(--green)">${fmt(balance)}</span>
-        </div>` : ''}
-      </div>`;
-    });
-  }
-
-  document.getElementById('rooms-content').innerHTML = html;
-}
-
-// ===================== TENANT DETAIL =====================
-function showTenantDetail(id) {
-  const d = getData();
-  const tenant = d.tenants.find(t => t.id === id);
-  if (!tenant) return;
-
-  const cm = currentMonth();
-  const due = calcDue(tenant, cm, d);
-  const paid = getMonthPaid(id, cm, d);
-  const remaining = Math.max(0, due.totalDue - paid);
-  const balance = getBalance(id, d);
-  const isAdvance = balance > 0;
-  const isOwe = balance < 0;
-
-  const allPayments = (d.payments || []).filter(p => p.tenantId === id).sort((a,b) => b.date > a.date ? 1 : -1);
-
-  let html = `<div class="modal-handle"></div>
-  <div class="tenant-header" style="margin-bottom:16px">
-    <div class="tenant-avatar" style="width:52px;height:52px;font-size:20px">${initials(tenant.name)}</div>
-    <div>
-      <div style="font-size:20px;font-weight:800;font-family:'Syne',sans-serif">${tenant.name}</div>
-      <div style="font-size:13px;color:var(--text2)">Room ${tenant.room} • ${tenant.phone || 'No phone'}</div>
-    </div>
-  </div>
-
-  <div class="section-title" style="font-size:15px">📅 ${monthName(cm)}</div>
-
-  <div class="card" style="padding:14px;margin-bottom:12px">
-    <div class="amount-row"><span class="amount-label">Base Rent</span><span class="amount-val">${fmt(due.rentAmt)}</span></div>
-    ${due.elecDetails ? `
-    <div class="amount-row">
-      <span class="amount-label">⚡ Electricity<br><span style="font-size:11px;color:var(--text3)">${due.elecDetails.prev} → ${due.elecDetails.curr} = ${due.elecDetails.units} units × ${fmt(due.elecDetails.rate)}</span></span>
-      <span class="amount-val" style="color:var(--orange)">${fmt(due.elecDetails.amount)}</span>
-    </div>` : tenant.electricityEnabled ? `
-    <div class="amount-row"><span class="amount-label" style="color:var(--text3)">⚡ Electricity</span><span class="amount-val" style="color:var(--text3)">No reading</span></div>` : ''}
-    <div class="divider"></div>
-    <div class="amount-row"><span class="amount-label" style="font-weight:700">Total Due</span><span class="amount-val" style="font-size:16px">${fmt(due.totalDue)}</span></div>
-    <div class="amount-row"><span class="amount-label" style="color:var(--green)">Paid This Month</span><span class="amount-val" style="color:var(--green)">${fmt(paid)}</span></div>
-  </div>
-
-  ${remaining > 0 ? `
-  <div class="balance-box">
-    <div class="balance-label">⚡ BAKI BACHA (${monthName(cm)})</div>
-    <div class="balance-amount">${fmt(remaining)}</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:4px">${fmt(paid)} paid of ${fmt(due.totalDue)}</div>
-  </div>` : paid >= due.totalDue && due.totalDue > 0 ? `
-  <div class="alert alert-success">✅ ${monthName(cm)} ka payment complete hai!</div>` : ''}
-
-  ${isAdvance ? `
-  <div class="advance-box">
-    <div class="advance-label">🟢 ADVANCE (Extra Paid)</div>
-    <div class="advance-amount">${fmt(balance)}</div>
-    <div style="font-size:11px;color:var(--text3);margin-top:4px">Agle month adjust hoga</div>
-  </div>` : isOwe ? `
-  <div class="balance-box">
-    <div class="balance-label">❌ TOTAL BAAKI (All Months)</div>
-    <div class="balance-amount">${fmt(Math.abs(balance))}</div>
-  </div>` : ''}
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
-    <button class="btn btn-primary" onclick="closeModal();showPayModal('${id}')">💰 Payment</button>
-    <button class="btn btn-whatsapp" onclick="sendWhatsApp('${id}','${cm}')">📱 WhatsApp</button>
-    ${tenant.electricityEnabled ? `<button class="btn btn-ghost" onclick="closeModal();showAddReadingModal('${id}')">⚡ Reading</button>` : '<div></div>'}
-    <button class="btn btn-ghost" onclick="closeModal();editTenant('${id}')">✏️ Edit</button>
-  </div>
-
-  ${allPayments.length > 0 ? `
-  <div class="section-title" style="font-size:15px">💳 Payment History</div>
-  ${allPayments.slice(0,10).map(p => {
-    const due2 = calcDue(tenant, p.month, d);
-    const allForMonth = (d.payments||[]).filter(x => x.tenantId === id && x.month === p.month);
-    const totalForMonth = allForMonth.reduce((s,x) => s+x.amount, 0);
-    const bal = totalForMonth - due2.totalDue;
-    return `
-    <div class="payment-item">
-      <div class="payment-left">
-        <div class="payment-month">${monthName(p.month)}</div>
-        <div class="payment-date">${fmtDate(p.date)} ${p.note ? '• '+p.note : ''}</div>
-        ${bal < 0 ? `<div style="font-size:11px;color:var(--red);margin-top:2px">Baki: ${fmt(Math.abs(bal))}</div>` : ''}
-        ${bal > 0 ? `<div style="font-size:11px;color:var(--green);margin-top:2px">Advance: ${fmt(bal)}</div>` : ''}
-      </div>
-      <div class="payment-right">
-        <div class="payment-amount">${fmt(p.amount)}</div>
-        <div style="font-size:11px;color:var(--text3)">${p.type === 'partial' ? '⚡ Partial' : p.type === 'advance' ? '⬆️ Advance' : '✓ Full'}</div>
-      </div>
-    </div>`;
-  }).join('')}` : ''}
-
-  <button class="btn btn-ghost btn-block" style="margin-top:16px;color:var(--red)" onclick="confirmDeleteTenant('${id}')">🗑️ Remove Tenant</button>
-  `;
-
-  openModal(html);
-}
-
-// ===================== WHATSAPP =====================
-function sendWhatsApp(tenantId, month) {
-  const d = getData();
-  const tenant = d.tenants.find(t => t.id === tenantId);
-  if (!tenant) return;
-
-  const due = calcDue(tenant, month, d);
-  const paid = getMonthPaid(tenantId, month, d);
-  const remaining = Math.max(0, due.totalDue - paid);
-  const balance = getBalance(tenantId, d);
-
-  let msg = `🏠 *Rent Reminder*\n\nNamaste ${tenant.name} ji,\n\n`;
-  msg += `📅 *Month:* ${monthName(month)}\n`;
-  msg += `🏠 *Room:* ${tenant.room}\n\n`;
-  msg += `💰 *Base Rent:* ₹${due.rentAmt.toLocaleString('en-IN')}\n`;
-
-  if (due.elecDetails) {
-    msg += `⚡ *Electricity:* ${due.elecDetails.prev}→${due.elecDetails.curr} = ${due.elecDetails.units} units × ₹${due.elecDetails.rate} = ₹${due.elecDetails.amount.toLocaleString('en-IN')}\n`;
-  }
-
-  msg += `\n📊 *Total Due:* ₹${due.totalDue.toLocaleString('en-IN')}\n`;
-
-  if (paid > 0) {
-    msg += `✅ *Paid:* ₹${paid.toLocaleString('en-IN')}\n`;
-  }
-
-  if (remaining > 0) {
-    msg += `\n🔴 *BAKI BACHA: ₹${remaining.toLocaleString('en-IN')}*\n`;
-    msg += `Jald se jald payment kar dein.\n`;
-  } else if (balance > 0) {
-    msg += `\n🟢 *Advance: ₹${balance.toLocaleString('en-IN')}* (agle month adjust hoga)\n`;
-  } else {
-    msg += `\n✅ *Payment complete hai. Shukriya!*\n`;
-  }
-
-  msg += `\nThank you! 🙏`;
-
-  const phone = (tenant.phone || '').replace(/\D/g, '');
-  const url = `https://wa.me/${phone ? '91'+phone : ''}?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
-}
-
-// ===================== PAY MODAL =====================
-function showPayModal(tenantId) {
-  const d = getData();
-  const tenant = d.tenants.find(t => t.id === tenantId);
-  if (!tenant) return;
-  const cm = currentMonth();
-  const due = calcDue(tenant, cm, d);
-  const paid = getMonthPaid(tenantId, cm, d);
-  const remaining = Math.max(0, due.totalDue - paid);
-
-  const html = `<div class="modal-handle"></div>
-  <div class="modal-title">💰 Record Payment</div>
-  <div style="margin-bottom:16px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm)">
-    <div style="font-weight:700;margin-bottom:4px">${tenant.name}</div>
-    <div style="font-size:12px;color:var(--text2)">Total Due: ${fmt(due.totalDue)} | Paid: ${fmt(paid)} | Baki: ${fmt(remaining)}</div>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Month</label>
-    <select class="form-select" id="pay-month">
-      ${getLast6Months().map(m => `<option value="${m}" ${m===cm?'selected':''}>${monthName(m)}</option>`).join('')}
-    </select>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Amount</label>
-    <input class="form-input" type="number" id="pay-amount" placeholder="Enter amount" value="${remaining || due.totalDue}">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Payment Date</label>
-    <input class="form-input" type="date" id="pay-date" value="${new Date().toISOString().split('T')[0]}">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Note (optional)</label>
-    <input class="form-input" type="text" id="pay-note" placeholder="e.g. Cash, UPI, partial">
-  </div>
-  <button class="btn btn-green btn-block" onclick="savePayment('${tenantId}')">✅ Save Payment</button>
-  <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>`;
-  openModal(html);
-}
-
-function quickPay(tenantId) { showPayModal(tenantId); }
-
-function savePayment(tenantId) {
-  const amount = parseFloat(document.getElementById('pay-amount').value);
-  const month = document.getElementById('pay-month').value;
-  const date = document.getElementById('pay-date').value;
-  const note = document.getElementById('pay-note').value;
-
-  if (!amount || amount <= 0) { showToast('❌ Valid amount daalo'); return; }
-
-  const d = getData();
-  const tenant = d.tenants.find(t => t.id === tenantId);
-  const due = calcDue(tenant, month, d);
-  const prevPaid = getMonthPaid(tenantId, month, d);
-  const totalAfter = prevPaid + amount;
-
-  let type = 'full';
-  if (totalAfter < due.totalDue) type = 'partial';
-  else if (totalAfter > due.totalDue) type = 'advance';
-
-  d.payments.push({
-    id: 'pay_'+Date.now(),
-    tenantId, month, amount, date: date || new Date().toISOString().split('T')[0],
-    note, type
-  });
-  saveData(d);
-  closeModal();
-
-  const remaining = Math.max(0, due.totalDue - totalAfter);
-  if (type === 'partial') {
-    showToast(`✅ ${fmt(amount)} saved. Baki: ${fmt(remaining)}`);
-  } else if (type === 'advance') {
-    showToast(`✅ ${fmt(amount)} saved. Advance: ${fmt(totalAfter - due.totalDue)}`);
-  } else {
-    showToast(`✅ Full payment recorded!`);
-  }
-  renderPage(currentPage);
-}
-
-function getLast6Months() {
-  const months = [];
-  const now = new Date();
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    months.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
-  }
-  return months;
-}
-
-// ===================== ADD TENANT =====================
-function showAddTenantModal(editId) {
-  const d = getData();
-  const e = editId ? d.tenants.find(t => t.id === editId) : null;
-  const isEdit = !!e;
-
-  const html = `<div class="modal-handle"></div>
-  <div class="modal-title">${isEdit ? '✏️ Edit Tenant' : '👤 Add Tenant'}</div>
-  <div class="form-group">
-    <label class="form-label">Name *</label>
-    <input class="form-input" id="t-name" placeholder="Tenant ka naam" value="${e ? e.name : ''}">
-  </div>
-  <div class="form-row">
-    <div class="form-group">
-      <label class="form-label">Room *</label>
-      <input class="form-input" id="t-room" placeholder="101" value="${e ? e.room : ''}">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Phone</label>
-      <input class="form-input" id="t-phone" type="tel" placeholder="9999999999" value="${e ? (e.phone||'') : ''}">
-    </div>
-  </div>
-  <div class="form-row">
-    <div class="form-group">
-      <label class="form-label">Monthly Rent *</label>
-      <input class="form-input" id="t-rent" type="number" placeholder="5000" value="${e ? e.rentAmount : ''}">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Join Date</label>
-      <input class="form-input" id="t-join" type="date" value="${e ? (e.joinDate||'') : new Date().toISOString().split('T')[0]}">
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="form-label">
-      <input type="checkbox" id="t-elec" style="margin-right:8px" ${e && e.electricityEnabled ? 'checked' : ''} onchange="toggleElecForm()">
-      ⚡ Electricity Billing Enable
-    </label>
-  </div>
-  <div id="elec-form" style="display:${e && e.electricityEnabled ? 'block' : 'none'}">
-    <div class="alert alert-info">
-      💡 Join karte waqt jitni reading hai woh "Join Reading" mein daalo. Yahi base reading hogi. Phir har mahine prev→curr daalna hoga.
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label class="form-label">Rate per Unit (₹)</label>
-        <input class="form-input" id="t-rate" type="number" placeholder="8" value="${e ? (e.rentPerUnit || d.settings.rentPerUnit || 8) : (d.settings.rentPerUnit || 8)}">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Join Reading (base)</label>
-        <input class="form-input" id="t-joinreading" type="number" placeholder="0" value="${e ? (e.joinReading || 0) : 0}">
-      </div>
-    </div>
-  </div>
-  <button class="btn btn-primary btn-block" onclick="saveTenant('${editId||''}')">${isEdit ? '💾 Update' : '➕ Add Tenant'}</button>
-  <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>`;
-  openModal(html);
-}
-
-function toggleElecForm() {
-  const show = document.getElementById('t-elec').checked;
-  document.getElementById('elec-form').style.display = show ? 'block' : 'none';
-}
-
-function editTenant(id) { showAddTenantModal(id); }
-
-function saveTenant(editId) {
-  const name = document.getElementById('t-name').value.trim();
-  const room = document.getElementById('t-room').value.trim();
-  const phone = document.getElementById('t-phone').value.trim();
-  const rentAmount = parseFloat(document.getElementById('t-rent').value);
-  const joinDate = document.getElementById('t-join').value;
-  const electricityEnabled = document.getElementById('t-elec').checked;
-  const rentPerUnit = electricityEnabled ? parseFloat(document.getElementById('t-rate').value || 8) : 8;
-  const joinReading = electricityEnabled ? parseFloat(document.getElementById('t-joinreading').value || 0) : 0;
-
-  if (!name || !room || !rentAmount) { showToast('❌ Name, room aur rent zaroori hai'); return; }
-
-  const d = getData();
-
-  if (editId) {
-    const idx = d.tenants.findIndex(t => t.id === editId);
-    if (idx >= 0) {
-      d.tenants[idx] = { ...d.tenants[idx], name, room, phone, rentAmount, joinDate, electricityEnabled, rentPerUnit, joinReading };
-    }
-  } else {
-    d.tenants.push({
-      id: 'ten_'+Date.now(),
-      name, room, phone, rentAmount, joinDate, electricityEnabled, rentPerUnit, joinReading,
-      readings: [], active: true
-    });
-  }
-
-  saveData(d);
-  closeModal();
-  showToast(editId ? '✅ Tenant updated!' : '✅ Tenant added!');
-  renderPage(currentPage);
-}
-
-function confirmDeleteTenant(id) {
-  const d = getData();
-  const t = d.tenants.find(x => x.id === id);
-  if (!t) return;
-  if (!confirm(`Remove ${t.name}?`)) return;
-  d.tenants = d.tenants.filter(x => x.id !== id);
-  d.payments = d.payments.filter(p => p.tenantId !== id);
-  saveData(d);
-  closeModal();
-  showToast('🗑️ Tenant removed');
-  renderPage(currentPage);
-}
-
-// ===================== ELECTRICITY READING =====================
-// CORRECT LOGIC:
-// - Join reading = base reading (set when tenant joins)
-// - First month: prev = joinReading, curr = new reading
-// - Subsequent months: prev = last month's curr reading
-// - Units used = curr - prev
-
-function showAddReadingModal(tenantId) {
-  const d = getData();
-  const tenant = d.tenants.find(t => t.id === tenantId);
-  if (!tenant) return;
-  const cm = currentMonth();
-  const readings = tenant.readings || [];
-
-  // Find previous reading (last month or join reading)
-  const prevMonthReading = getPrevReading(tenant, cm, readings);
-  const existingReading = readings.find(r => r.month === cm);
-
-  const html = `<div class="modal-handle"></div>
-  <div class="modal-title">⚡ Electricity Reading</div>
-  <div class="unit-info">
-    <div class="unit-info-row"><span>Tenant</span><span>${tenant.name}</span></div>
-    <div class="unit-info-row"><span>Month</span><span>${monthName(cm)}</span></div>
-    <div class="unit-info-row"><span>Rate per Unit</span><span>₹${tenant.rentPerUnit || d.settings.rentPerUnit}</span></div>
-    <div class="unit-info-row" style="color:var(--orange)"><span>Previous Reading</span><span>${prevMonthReading}</span></div>
-  </div>
-  <div class="alert alert-info">
-    ℹ️ Previous reading auto-fill ho gayi hai. Sirf current month ki <b>nai reading</b> daalo.
-  </div>
-  <div class="form-group">
-    <label class="form-label">Month</label>
-    <select class="form-select" id="r-month" onchange="updatePrevReading('${tenantId}')">
-      ${getLast6Months().map(m => `<option value="${m}" ${m===cm?'selected':''}>${monthName(m)}</option>`).join('')}
-    </select>
-  </div>
-  <div class="form-row">
-    <div class="form-group">
-      <label class="form-label">Previous Reading</label>
-      <input class="form-input" id="r-prev" type="number" value="${existingReading ? existingReading.prevReading : prevMonthReading}" readonly style="opacity:0.7">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Current Reading *</label>
-      <input class="form-input" id="r-curr" type="number" placeholder="Current meter" value="${existingReading ? existingReading.currReading : ''}" oninput="calcUnitsPreview()">
-    </div>
-  </div>
-  <div id="units-preview" style="display:none;margin-bottom:16px" class="alert alert-success"></div>
-  <button class="btn btn-orange btn-block" onclick="saveReading('${tenantId}')">💾 Save Reading</button>
-  <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>`;
-  openModal(html);
-}
-
-function getPrevReading(tenant, forMonth, readings) {
-  // Sort readings by month descending
-  const sorted = [...readings].sort((a,b) => b.month > a.month ? 1 : -1);
-  // Find the most recent reading BEFORE forMonth
-  const prev = sorted.find(r => r.month < forMonth);
-  if (prev) return prev.currReading; // last month's current = this month's previous
-  return tenant.joinReading || 0; // fallback to join reading
-}
-
-function updatePrevReading(tenantId) {
-  const d = getData();
-  const tenant = d.tenants.find(t => t.id === tenantId);
-  const month = document.getElementById('r-month').value;
-  const readings = tenant.readings || [];
-  const prevReading = getPrevReading(tenant, month, readings);
-  const existingReading = readings.find(r => r.month === month);
-  document.getElementById('r-prev').value = existingReading ? existingReading.prevReading : prevReading;
-  document.getElementById('r-curr').value = existingReading ? existingReading.currReading : '';
-  calcUnitsPreview();
-}
-
-function calcUnitsPreview() {
-  const d = getData();
-  const prev = parseFloat(document.getElementById('r-prev').value || 0);
-  const curr = parseFloat(document.getElementById('r-curr').value || 0);
-  const preview = document.getElementById('units-preview');
-  if (curr > prev) {
-    const units = curr - prev;
-    // get tenant id from modal context - just show preview
-    preview.style.display = 'block';
-    preview.innerHTML = `⚡ Units Used: <b>${units}</b> (${curr} - ${prev})`;
-  } else {
-    preview.style.display = 'none';
-  }
-}
-
-function saveReading(tenantId) {
-  const month = document.getElementById('r-month').value;
-  const prev = parseFloat(document.getElementById('r-prev').value);
-  const curr = parseFloat(document.getElementById('r-curr').value);
-
-  if (isNaN(curr)) { showToast('❌ Current reading daalo'); return; }
-  if (curr < prev) { showToast('❌ Current reading previous se kam nahi ho sakti'); return; }
-
-  const d = getData();
-  const tenant = d.tenants.find(t => t.id === tenantId);
-  if (!tenant.readings) tenant.readings = [];
-
-  // Remove existing for this month
-  tenant.readings = tenant.readings.filter(r => r.month !== month);
-  tenant.readings.push({ month, prevReading: prev, currReading: curr });
-  saveData(d);
-  closeModal();
-
-  const units = curr - prev;
-  const rate = tenant.rentPerUnit || d.settings.rentPerUnit;
-  showToast(`✅ ${units} units saved = ${fmt(units * rate)}`);
-  renderPage(currentPage);
-}
-
-// ===================== PAYMENTS PAGE =====================
-function renderPayments() {
-  const d = getData();
-  const cm = currentMonth();
-
-  let html = `<div class="section-title">Payments</div>`;
-
-  const months = getLast6Months();
-  html += `<div class="month-tabs">`;
-  months.forEach(m => html += `<div class="month-tab ${m===cm?'active':''}" onclick="filterPaymentsByMonth('${m}')">${monthName(m)}</div>`);
-  html += `</div>`;
-  html += `<div id="payment-month-content"></div>`;
-
-  document.getElementById('payments-content').innerHTML = html;
-  filterPaymentsByMonth(cm);
-}
-
-function filterPaymentsByMonth(month) {
-  document.querySelectorAll('.month-tab').forEach(t => {
-    t.classList.toggle('active', t.textContent === monthName(month));
-  });
-
-  const d = getData();
-  const tenants = d.tenants;
-  let html = '';
-
-  tenants.forEach(tenant => {
-    const due = calcDue(tenant, month, d);
-    const paid = getMonthPaid(tenant.id, month, d);
-    const remaining = Math.max(0, due.totalDue - paid);
-    const totalAfterPaid = paid;
-    const balance = getBalance(tenant.id, d);
-    const isAdvance = totalAfterPaid > due.totalDue;
-
-    let statusColor = 'var(--text3)';
-    let statusText = 'No Due';
-    if (due.totalDue > 0) {
-      if (paid >= due.totalDue) { statusColor = 'var(--green)'; statusText = '✓ Paid'; }
-      else if (paid > 0) { statusColor = 'var(--orange)'; statusText = 'Partial'; }
-      else { statusColor = 'var(--red)'; statusText = 'Pending'; }
-    }
-
-    html += `
-    <div class="card" style="margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <div class="tenant-avatar" style="width:38px;height:38px;font-size:14px">${initials(tenant.name)}</div>
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:14px">${tenant.name}</div>
-          <div style="font-size:11px;color:var(--text2)">Room ${tenant.room}</div>
-        </div>
-        <span style="color:${statusColor};font-size:12px;font-weight:600">${statusText}</span>
-      </div>
-      <div class="amount-row"><span class="amount-label">Total Due</span><span class="amount-val">${fmt(due.totalDue)}</span></div>
-      <div class="amount-row"><span class="amount-label">Paid</span><span class="amount-val" style="color:var(--green)">${fmt(paid)}</span></div>
-      ${remaining > 0 ? `<div class="amount-row" style="background:rgba(239,68,68,0.07);border-radius:8px;padding:8px;margin-top:4px"><span class="amount-label" style="color:var(--red);font-weight:600">Baki Bacha</span><span class="amount-val" style="color:var(--red);font-size:15px">${fmt(remaining)}</span></div>` : ''}
-      ${balance > 0 && due.totalDue > 0 && paid >= due.totalDue ? `<div class="amount-row" style="background:rgba(16,185,129,0.07);border-radius:8px;padding:8px;margin-top:4px"><span class="amount-label" style="color:var(--green)">Advance (Overall)</span><span class="amount-val" style="color:var(--green)">${fmt(balance)}</span></div>` : ''}
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="btn btn-primary btn-sm" style="flex:1" onclick="showPayModal('${tenant.id}')">💰 Pay</button>
-        ${(remaining > 0 || paid === 0) ? `<button class="btn btn-whatsapp btn-sm" onclick="sendWhatsApp('${tenant.id}','${month}')">📱 WA</button>` : ''}
-      </div>
-    </div>`;
-  });
-
-  if (html === '') html = `<div class="empty-state"><div class="empty-icon">💳</div><p>No tenants found</p></div>`;
-  document.getElementById('payment-month-content').innerHTML = html;
-}
-
-// ===================== EXPENSES PAGE =====================
-function renderExpenses() {
-  const d = getData();
-  const expenses = (d.expenses || []).sort((a,b) => b.date > a.date ? 1 : -1);
-  const total = expenses.reduce((s,e) => s+e.amount, 0);
-
-  let html = `
-  <div class="section-title">Expenses</div>
-  <div class="stat-box" style="margin-bottom:16px">
-    <div class="stat-label">Total Expenses</div>
-    <div class="stat-value red">${fmt(total)}</div>
-  </div>`;
-
-  if (expenses.length === 0) {
-    html += `<div class="empty-state"><div class="empty-icon">📋</div><p>No expenses yet.<br>Tap ＋ to add.</p></div>`;
-  } else {
-    expenses.forEach(exp => {
-      html += `
-      <div class="card" style="padding:14px;margin-bottom:10px">
-        <div class="expense-item" style="border:none;padding:0">
-          <div>
-            <div style="font-weight:600;font-size:14px">${exp.title}</div>
-            <div style="font-size:12px;color:var(--text3);margin-top:2px">${fmtDate(exp.date)} ${exp.category ? '• '+exp.category : ''}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            <span style="color:var(--red);font-weight:700;font-size:15px">${fmt(exp.amount)}</span>
-            <button class="icon-btn" style="width:30px;height:30px" onclick="deleteExpense('${exp.id}')">🗑️</button>
-          </div>
-        </div>
-      </div>`;
-    });
-  }
-
-  document.getElementById('expenses-content').innerHTML = html;
-}
-
-function showAddExpenseModal() {
-  const html = `<div class="modal-handle"></div>
-  <div class="modal-title">📋 Add Expense</div>
-  <div class="form-group">
-    <label class="form-label">Title *</label>
-    <input class="form-input" id="exp-title" placeholder="e.g. Plumbing repair">
-  </div>
-  <div class="form-row">
-    <div class="form-group">
-      <label class="form-label">Amount *</label>
-      <input class="form-input" type="number" id="exp-amount" placeholder="500">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Date</label>
-      <input class="form-input" type="date" id="exp-date" value="${new Date().toISOString().split('T')[0]}">
-    </div>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Category</label>
-    <select class="form-select" id="exp-cat">
-      <option value="">Select</option>
-      <option>Maintenance</option>
-      <option>Utilities</option>
-      <option>Repairs</option>
-      <option>Cleaning</option>
-      <option>Other</option>
-    </select>
-  </div>
-  <button class="btn btn-primary btn-block" onclick="saveExpense()">➕ Add Expense</button>
-  <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>`;
-  openModal(html);
-}
-
-function saveExpense() {
-  const title = document.getElementById('exp-title').value.trim();
-  const amount = parseFloat(document.getElementById('exp-amount').value);
-  const date = document.getElementById('exp-date').value;
-  const category = document.getElementById('exp-cat').value;
-
-  if (!title || !amount) { showToast('❌ Title aur amount daalo'); return; }
-  const d = getData();
-  if (!d.expenses) d.expenses = [];
-  d.expenses.push({ id: 'exp_'+Date.now(), title, amount, date, category });
-  saveData(d);
-  closeModal();
-  showToast('✅ Expense added!');
-  renderPage(currentPage);
-}
-
-function deleteExpense(id) {
-  if (!confirm('Delete this expense?')) return;
-  const d = getData();
-  d.expenses = (d.expenses||[]).filter(e => e.id !== id);
-  saveData(d);
-  renderExpenses();
-  showToast('🗑️ Deleted');
-}
-
-// ===================== TENANTS PAGE =====================
-function renderTenants() {
-  const d = getData();
-  const tenants = d.tenants;
-
-  let html = `<div class="section-title">All Tenants</div>`;
-
-  if (tenants.length === 0) {
-    html += `<div class="empty-state"><div class="empty-icon">👥</div><p>No tenants yet.<br>Tap ＋ to add first tenant.</p></div>`;
-  } else {
-    tenants.forEach(t => {
-      html += `
-      <div class="tenant-card" onclick="showTenantDetail('${t.id}')">
-        <div class="tenant-header">
-          <div class="tenant-avatar">${initials(t.name)}</div>
-          <div style="flex:1">
-            <div class="tenant-name">${t.name}</div>
-            <div class="tenant-room">Room ${t.room} • ${t.phone || 'No phone'}</div>
-          </div>
-          <div style="text-align:right;font-size:12px;color:var(--text2)">${fmt(t.rentAmount)}<br><span style="color:var(--text3)">per month</span></div>
-        </div>
-        <div class="tenant-meta">
-          ${t.electricityEnabled ? '<span class="badge badge-blue">⚡ Electricity</span>' : ''}
-          <span class="badge badge-purple">Since ${fmtDate(t.joinDate)}</span>
-          <span class="badge badge-green">Room ${t.room}</span>
-        </div>
-      </div>`;
-    });
-  }
-
-  document.getElementById('tenants-content').innerHTML = html;
-}
-
-// ===================== SEARCH =====================
-function showSearch() {
-  const d = getData();
-  const html = `<div class="modal-handle"></div>
-  <div class="modal-title">🔍 Search Tenant</div>
-  <input class="form-input" id="search-input" placeholder="Name ya room number..." oninput="doSearch()" autofocus style="margin-bottom:16px">
-  <div id="search-results"></div>`;
-  openModal(html);
-  setTimeout(() => document.getElementById('search-input')?.focus(), 300);
-}
-
-function doSearch() {
-  const q = (document.getElementById('search-input')?.value || '').toLowerCase();
-  const d = getData();
-  const results = d.tenants.filter(t =>
-    t.name.toLowerCase().includes(q) || (t.room+'').includes(q) || (t.phone||'').includes(q)
-  );
-  let html = '';
-  results.forEach(t => {
-    html += `<div class="card" style="cursor:pointer;padding:14px" onclick="closeModal();showTenantDetail('${t.id}')">
-      <div style="font-weight:700">${t.name}</div>
-      <div style="font-size:12px;color:var(--text2)">Room ${t.room} • ${t.phone||'No phone'} • ${fmt(t.rentAmount)}/month</div>
-    </div>`;
-  });
-  document.getElementById('search-results').innerHTML = html || `<div style="text-align:center;color:var(--text3);padding:20px">No results</div>`;
-}
-
-// ===================== EXPORT =====================
-function exportData() {
-  const d = getData();
-  const json = JSON.stringify(d, null, 2);
-  const blob = new Blob([json], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `rentbook_${new Date().toISOString().split('T')[0]}.json`;
-  a.click();
-  showToast('📤 Data exported!');
-}
-
-// ===================== SETTINGS =====================
-function showSettings() {
-  const d = getData();
-  const s = d.settings;
-  const html = `<div class="modal-handle"></div>
-  <div class="modal-title">⚙️ Settings</div>
-  <div class="form-group">
-    <label class="form-label">Property Name</label>
-    <input class="form-input" id="s-name" value="${s.propertyName||'My Property'}">
-  </div>
-  <div class="form-row">
-    <div class="form-group">
-      <label class="form-label">Currency Symbol</label>
-      <input class="form-input" id="s-cur" value="${s.currency||'₹'}">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Default Rate/Unit</label>
-      <input class="form-input" type="number" id="s-rate" value="${s.rentPerUnit||8}">
-    </div>
-  </div>
-  <button class="btn btn-primary btn-block" onclick="saveSettings()">💾 Save</button>
-  <div class="divider"></div>
-  <button class="btn btn-ghost btn-block" onclick="importData()">📥 Import Data</button>
-  <button class="btn btn-ghost btn-block" style="color:var(--red)" onclick="clearAllData()">🗑️ Clear All Data</button>`;
-  openModal(html);
-}
-
-function saveSettings() {
-  const d = getData();
-  d.settings = {
-    propertyName: document.getElementById('s-name').value,
-    currency: document.getElementById('s-cur').value,
-    rentPerUnit: parseFloat(document.getElementById('s-rate').value || 8)
-  };
-  saveData(d);
-  closeModal();
-  showToast('✅ Settings saved!');
-  renderPage(currentPage);
-}
-
-function clearAllData() {
-  if (!confirm('⚠️ Sab data delete ho jayega! Sure?')) return;
-  if (!confirm('Pakka sure ho? Yeh undo nahi hoga!')) return;
-  localStorage.removeItem('rb_data');
-  showToast('🗑️ All data cleared');
-  renderPage(currentPage);
-}
-
-function importData() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.json';
-  input.onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        saveData(data);
-        closeModal();
-        showToast('✅ Data imported!');
-        renderPage(currentPage);
-      } catch(err) {
-        showToast('❌ Invalid file');
-      }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-}
-
-function showAddPaymentModal() {
-  const d = getData();
-  if (d.tenants.length === 0) { showToast('Pehle tenant add karo'); return; }
-  const html = `<div class="modal-handle"></div>
-  <div class="modal-title">💰 Record Payment</div>
-  <div class="form-group">
-    <label class="form-label">Tenant *</label>
-    <select class="form-select" id="pay-tenant" onchange="updatePayDue()">
-      ${d.tenants.map(t => `<option value="${t.id}">${t.name} (Room ${t.room})</option>`).join('')}
-    </select>
-  </div>
-  <div id="pay-due-info" style="margin-bottom:12px"></div>
-  <div class="form-group">
-    <label class="form-label">Month</label>
-    <select class="form-select" id="pay-month2">
-      ${getLast6Months().map(m => `<option value="${m}" ${m===currentMonth()?'selected':''}>${monthName(m)}</option>`).join('')}
-    </select>
-  </div>
-  <div class="form-group">
-    <label class="form-label">Amount</label>
-    <input class="form-input" type="number" id="pay-amount2" placeholder="Amount">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Date</label>
-    <input class="form-input" type="date" id="pay-date2" value="${new Date().toISOString().split('T')[0]}">
-  </div>
-  <div class="form-group">
-    <label class="form-label">Note</label>
-    <input class="form-input" id="pay-note2" placeholder="Optional">
-  </div>
-  <button class="btn btn-green btn-block" onclick="savePayment2()">✅ Save</button>
-  <button class="btn btn-ghost btn-block" onclick="closeModal()">Cancel</button>`;
-  openModal(html);
-  setTimeout(updatePayDue, 100);
-}
-
-function updatePayDue() {
-  const tenantId = document.getElementById('pay-tenant')?.value;
-  const month = document.getElementById('pay-month2')?.value || currentMonth();
-  if (!tenantId) return;
-  const d = getData();
-  const tenant = d.tenants.find(t => t.id === tenantId);
-  if (!tenant) return;
-  const due = calcDue(tenant, month, d);
-  const paid = getMonthPaid(tenantId, month, d);
-  const remaining = Math.max(0, due.totalDue - paid);
-  const el = document.getElementById('pay-due-info');
-  if (el) {
-    el.innerHTML = `<div class="unit-info">
-      <div class="unit-info-row"><span>Total Due</span><span>${fmt(due.totalDue)}</span></div>
-      <div class="unit-info-row"><span>Already Paid</span><span style="color:var(--green)">${fmt(paid)}</span></div>
-      <div class="unit-info-row"><span style="color:var(--red);font-weight:700">Baki Bacha</span><span style="color:var(--red);font-weight:700">${fmt(remaining)}</span></div>
-    </div>`;
-    const amtInput = document.getElementById('pay-amount2');
-    if (amtInput && !amtInput.value) amtInput.value = remaining || due.totalDue;
-  }
-}
-
-function savePayment2() {
-  const tenantId = document.getElementById('pay-tenant').value;
-  const month = document.getElementById('pay-month2').value;
-  const amount = parseFloat(document.getElementById('pay-amount2').value);
-  const date = document.getElementById('pay-date2').value;
-  const note = document.getElementById('pay-note2').value;
-
-  if (!amount || amount <= 0) { showToast('❌ Amount daalo'); return; }
-
-  const d = getData();
-  const tenant = d.tenants.find(t => t.id === tenantId);
-  const due = calcDue(tenant, month, d);
-  const prevPaid = getMonthPaid(tenantId, month, d);
-  const totalAfter = prevPaid + amount;
-
-  let type = 'full';
-  if (totalAfter < due.totalDue) type = 'partial';
-  else if (totalAfter > due.totalDue) type = 'advance';
-
-  d.payments.push({ id: 'pay_'+Date.now(), tenantId, month, amount, date, note, type });
-  saveData(d);
-  closeModal();
-
-  const remaining = Math.max(0, due.totalDue - totalAfter);
-  if (type === 'partial') showToast(`✅ ${fmt(amount)} saved. Baki: ${fmt(remaining)}`);
-  else if (type === 'advance') showToast(`✅ Paid! Advance: ${fmt(totalAfter - due.totalDue)}`);
-  else showToast('✅ Full payment done!');
-  renderPage(currentPage);
-}
-
-// ===================== INIT =====================
-// Topbar settings button
-document.querySelector('.icon-btn[onclick="exportData()"]').insertAdjacentHTML('beforebegin',
-  '<button class="icon-btn" onclick="showSettings()" title="Settings">⚙️</button>');
-
-renderOverview();
 </script>
 </body>
 </html>
